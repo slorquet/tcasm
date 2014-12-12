@@ -36,6 +36,11 @@
 #define CONFIG_ASM_INBUF_SIZE 80
 #endif
 
+/* Line Comment char */
+#ifndef CONFIG_ASM_COMMENT
+#define CONFIG_ASM_COMMENT '#'
+#endif
+
 /*****************************************************************************
  * Definitions
  *****************************************************************************/
@@ -153,16 +158,39 @@ void init(struct asm_state_s *asmstate)
 
 int assemble_line(struct asm_state_s *state, int linelen)
 {
-  if(state->inbuf[linelen-1]=='\n')
+  char *line = state->inbuf;
+
+  /* remove crlf */
+
+  if(line[linelen-1]=='\n')
     {
-      state->inbuf[linelen-1] = 0;
+      line[linelen-1] = 0;
       linelen -= 1;
     }
 
-  if(state->inbuf[linelen-1]=='\r')
+  if(line[linelen-1]=='\r')
     {
-      state->inbuf[linelen-1] = 0;
+      line[linelen-1] = 0;
       linelen -= 1;
+    }
+
+  /* trim start spaces */
+
+  while ( (*line == ' ') || (*line == '\t') )
+    {
+      line++;
+      linelen--;
+    }
+
+  if (linelen==0)
+    {
+      return;
+    }
+
+  /* discard comments */
+  if (*line==CONFIG_ASM_COMMENT)
+    {
+      return;
     }
 
   printf("[%s]\n",state->inbuf);
