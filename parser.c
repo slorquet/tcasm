@@ -9,7 +9,7 @@
 
 /*****************************************************************************/
 
-int parse_label(struct asm_state_s *state, char *label)
+static int parse_label(struct asm_state_s *state, char *label)
 {
   printf("label [%s]\n", label);
   return 0;
@@ -17,15 +17,23 @@ int parse_label(struct asm_state_s *state, char *label)
 
 /*****************************************************************************/
 
-int parse_mnemo(struct asm_state_s *state, char *mnemo)
+static int parse_inst(struct asm_state_s *state, char *inst)
 {
-  printf("inst  [%s]\n", mnemo);
+  printf("inst  [%s]\n", inst);
   return 0;
 }
 
 /*****************************************************************************/
 
-int parse_line(struct asm_state_s *state, int linelen)
+static int parse_directive(struct asm_state_s *state, char *dir)
+{
+  printf("direc [%s]\n", dir);
+  return 0;
+}
+
+/*****************************************************************************/
+
+static int parse_line(struct asm_state_s *state, int linelen)
 {
   char *line = state->inbuf;
   char *label;
@@ -109,7 +117,14 @@ int parse_line(struct asm_state_s *state, int linelen)
 
   if (mnemo && strlen(mnemo))
     {
-      parse_mnemo(state, mnemo);
+      if (mnemo[0]=='.')
+        {
+          parse_directive(state, mnemo);
+        }
+      else
+        {
+          parse_inst(state, mnemo);
+        }
     }
 
   return 0;

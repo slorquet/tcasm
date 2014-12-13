@@ -11,15 +11,18 @@ each text line is parsed independently and affects the global assembler state
 
 the lines have the following syntax:
 
-.directive [params...]
+[label:] .directive [params...] #comment
 
 [label:] mnemonic [operands...] #comment
 
-so here are the rules:
+This is the gas syntax, as described here:
+https://sourceware.org/binutils/docs/as/Statements.html#Statements
+
+So here are the rules:
 
 directives starts with a dot
 labels ends with a colon and are followed by some spaces
-if the first word of a line does not contain a colon, then it's a mnemonic.
+if the first word of a line does not ends with a colon, then it's a mnemonic.
 
 space at the beginning of the line is not significant.
 
@@ -37,6 +40,7 @@ mnemonics are handled by the code generator
 
 current limitations that will be upgraded in the future
 
+no cpp-like preprocessing
 no file  inclusion
 no macros
 only one comment char
