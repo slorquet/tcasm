@@ -1,11 +1,11 @@
 BIN=tcasm
-OBJS=main.o
+OBJS=main.o parser.o
 
 CC = gcc
 CFLAGS = -g
 
 $(BIN): $(OBJS)
-	$(CC) $< -o $@
+	$(CC) $(OBJS) -o $@
 
 clean:
 	rm -f $(BIN)

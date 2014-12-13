@@ -58,7 +58,6 @@ struct asm_symbol_s
   uint32_t value;                        /* memory offset of the symbol within its section */
 };
 
-
 /*****************************************************************************/
 
 /* this structure stores the entirety of all asm variables */
@@ -74,11 +73,28 @@ struct asm_state_s
 
   /* intermediate state */
   struct asm_section_s asm_sections[CONFIG_ASM_SEC_MAX]; /* storage for sections */
+  struct asm_section_s *current_section;
 
   /* output status */
   FILE *output; /* output file */
 
 };
+
+/*****************************************************************************/
+
+/* this structure describes a target backend */
+
+struct asm_backend_s
+{
+  void *priv;
+  int (*directive)(struct asm_backend_s *backend, struct asm_state_s *state, char *buf);
+};
+
+/*****************************************************************************/
+
+/* parse a source file into the state */
+
+int parse(struct asm_state_s *state, const char *filename);
 
 #endif /* __TCASM__H__ */
 
