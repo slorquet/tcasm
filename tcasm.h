@@ -11,6 +11,13 @@ enum section_names_e
   SECTION_CUSTOM   /* this is a custom section */
 };
 
+enum asm_error_e
+{
+  ASM_OK,
+  ASM_WARN,
+  ASM_ERROR
+};
+
 /*****************************************************************************
  * Types
  *****************************************************************************/
@@ -68,8 +75,10 @@ struct asm_state_s
   char *outputname; /* output file name */
 
   /* input status */
+  char *inputname; /* name of the current input file */
   FILE *input; /* currently managed input file */
   char inbuf[CONFIG_ASM_INBUF_SIZE]; /*buffer for reading input file */
+  int  curline; /* current source line being read */
 
   /* intermediate state */
   struct asm_section_s asm_sections[CONFIG_ASM_SEC_MAX]; /* storage for sections */
@@ -94,7 +103,8 @@ struct asm_backend_s
 
 /* parse a source file into the state */
 
-int parse(struct asm_state_s *state, const char *filename);
+int parse(struct asm_state_s *state);
+int emit_error(struct asm_state_s *asmstate, const char *msg, ...);
 
 #endif /* __TCASM__H__ */
 

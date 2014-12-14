@@ -7,10 +7,11 @@
 
 #include "config.h"
 
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <string.h>
-#include <stdint.h>
 #include <unistd.h>
 
 #include "tcasm.h"
@@ -42,6 +43,19 @@ int usage(void)
          "  -t <target> select target\n"
         );
   return 0;
+}
+
+/*****************************************************************************/
+
+int emit_error(struct asm_state_s *asmstate, const char *msg, ...)
+{
+  va_list ap;
+  va_start(ap, msg);
+  fprintf(stderr, "%s:%d: error: ",asmstate->inputname, asmstate->curline);
+  vfprintf(stderr, msg, ap);
+  fprintf(stderr, "\n");
+  va_end(ap);
+  return ASM_ERROR;
 }
 
 /*****************************************************************************/
@@ -91,7 +105,8 @@ int main(int argc, char **argv)
 
   for(index=optind;index<argc;index++)
     {
-      ret = parse(&state, argv[index]);
+      state.inputname = argv[index];
+      ret = parse(&state);
       if (ret != 0)
         {
           goto donefree;

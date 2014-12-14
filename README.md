@@ -17,14 +17,16 @@ the lines have the following syntax:
 
 This is the gas syntax, as described here:
 https://sourceware.org/binutils/docs/as/Statements.html#Statements
+only one label per line is supported.
 
 So here are the rules:
 
+space at the beginning of the line is not significant.
 directives starts with a dot
 labels ends with a colon and are followed by some spaces
+labels must not start with a number.
 if the first word of a line does not ends with a colon, then it's a mnemonic.
 
-space at the beginning of the line is not significant.
 
 generic directives are parsed by common code:
 .section <name> .text .data .bss .rodata

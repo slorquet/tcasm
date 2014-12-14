@@ -12,7 +12,11 @@
 static int parse_label(struct asm_state_s *state, char *label)
 {
   printf("label [%s]\n", label);
-  return 0;
+  if (label[0] >= '0' && label[0]<='9')
+    {
+      return emit_error(state, "invalid label '%s'",label);
+    }
+  return ASM_OK;
 }
 
 /*****************************************************************************/
@@ -20,7 +24,7 @@ static int parse_label(struct asm_state_s *state, char *label)
 static int parse_inst(struct asm_state_s *state, char *inst)
 {
   printf("inst  [%s]\n", inst);
-  return 0;
+  return ASM_OK;
 }
 
 /*****************************************************************************/
@@ -41,7 +45,7 @@ static int parse_directive(struct asm_state_s *state, char *dir)
     {}
   else
     {}
-  return 0;
+  return ASM_OK;
 }
 
 /*****************************************************************************/
@@ -51,6 +55,7 @@ static int parse_line(struct asm_state_s *state, int linelen)
   char *line = state->inbuf;
   char *label;
   char *mnemo;
+  int  ret = ASM_OK;
 
   /* remove crlf */
 
@@ -76,14 +81,14 @@ static int parse_line(struct asm_state_s *state, int linelen)
 
   if (linelen==0)
     {
-      return;
+      return ASM_OK;
     }
 
   /* discard comments */
 
   if (*line==CONFIG_ASM_COMMENT)
     {
-      return;
+      return ASM_OK;
     }
 
   /* get first token */
@@ -125,49 +130,68 @@ printf("\nline  %s\n",line);
   while(*line && *line != CONFIG_ASM_COMMENT) line++;
   *line = 0;
 
+  /* right trim spaces after mnemonic */
+  line--;
+  while (line != mnemo && (*line==' ' || *line=='\t') )
+    {
+      *line=0;
+      line--;
+    }
+
   if (label)
     {
-      parse_label(state, label);
+      ret = parse_label(state, label);
     }
 
-  if (mnemo && strlen(mnemo))
+  if (ret != ASM_ERROR)
     {
-      if (mnemo[0]=='.')
+      if (mnemo && strlen(mnemo))
         {
-          parse_directive(state, mnemo);
-        }
-      else
-        {
-          parse_inst(state, mnemo);
+          if (mnemo[0]=='.')
+            {
+              ret = parse_directive(state, mnemo);
+            }
+          else
+            {
+              ret = parse_inst(state, mnemo);
+            }
         }
     }
 
-  return 0;
+  return ret;
 }
 
 /*****************************************************************************/
 
-int parse(struct asm_state_s *state, const char *filename)
+int parse(struct asm_state_s *state)
 {
   char *p;
   int  l;
   int  toolong; /* set to one if line was too long and end of line must be discarded */
-  printf("-> %s\n", filename);
-  state->input = fopen(filename, "rb");
+  int  ret = ASM_OK;
+  printf("-> %s\n", state->inputname);
+  state->input = fopen(state->inputname, "rb");
   if (state->input==NULL)
     {
-      printf("Cannot open input file, errno=%d\n",errno);
-      return 1;
+      printf("Cannot open '%s', errno=%d\n",state->inputname,errno);
+      return ASM_ERROR;
     }
+  state->curline = 0;
 
   while(1)
     {
       toolong = 0;
       p = fgets(state->inbuf, sizeof(state->inbuf), state->input);
       if(!p) break;
+      state->curline += 1;
       l = strlen(p);
       toolong = (p[l-1] != '\n');
-      parse_line(state,l);
+      ret = parse_line(state,l);
+      if (ret == ASM_ERROR)
+        {
+          goto done;
+        }
+      /* if line was too long, eat the rest of the line until its end */
       while (toolong)
         {
           p = fgets(state->inbuf, sizeof(state->inbuf), state->input);
