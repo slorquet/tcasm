@@ -28,6 +28,19 @@ static int parse_inst(struct asm_state_s *state, char *inst)
 static int parse_directive(struct asm_state_s *state, char *dir)
 {
   printf("direc [%s]\n", dir);
+
+  if (!strcmp(dir, ".section"))
+    {}
+  else if (!strcmp(dir, ".text"))
+    {}
+  else if (!strcmp(dir, ".db"))
+    {}
+  else if (!strcmp(dir, ".ds"))
+    {}
+  else if (!strcmp(dir, ".ascii"))
+    {}
+  else
+    {}
   return 0;
 }
 
