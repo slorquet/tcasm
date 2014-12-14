@@ -30,3 +30,5 @@ label: mnemocommentlbl   #comment
 
 label: mnemocommentlbl arg   #comment
 
+labnospc:plop
+

@@ -88,15 +88,17 @@ static int parse_line(struct asm_state_s *state, int linelen)
 
   /* get first token */
 
+printf("\nline  %s\n",line);
+
   label = line;
-  while ( *line && (*line != ' ') && (*line != '\t') )
+  while ( *line && (*line != ':') )
     {
       line++;
     }
 
   /* decide if that was a label */
 
-  if (*(line-1) != ':')
+  if (*line != ':')
     {
       /* Not a label */
       mnemo = label;
