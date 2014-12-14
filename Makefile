@@ -1,5 +1,5 @@
 BIN=tcasm
-OBJS=main.o parser.o
+OBJS=main.o parser.o directives.o
 
 CC = gcc
 CFLAGS = -g

@@ -26,8 +26,13 @@
 #endif
 
 /* Line Comment char */
-#ifndef CONFIG_ASM_COMMENT
-#define CONFIG_ASM_COMMENT '#'
+#ifndef CONFIG_ASM_COMMENT_LINE
+#define CONFIG_ASM_COMMENT_LINE '#'
+#endif
+
+/* Continuation Comment char */
+#ifndef CONFIG_ASM_COMMENT_CONT
+#define CONFIG_ASM_COMMENT_CONT '@'
 #endif
 
 #endif /* __CONFIG__H__ */

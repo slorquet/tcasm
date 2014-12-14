@@ -31,12 +31,25 @@ static int parse_inst(struct asm_state_s *state, char *inst)
 
 static int parse_directive(struct asm_state_s *state, char *dir)
 {
+  char *params;
+  int  ret = ASM_ERROR;
+
+  /* split directive params */
+  params = dir;
+  while (*params && !(*params == ' ' || *params=='\t')) params++;
+  *params = 0;
+  while (*params && (*params == ' ' || *params=='\t')) params++;
+
   printf("direc [%s]\n", dir);
+  if(*params) printf("params [%s]\n", params);
 
   if (!strcmp(dir, ".section"))
-    {}
+    {
+    }
   else if (!strcmp(dir, ".text"))
-    {}
+    {
+    ret = parse_section(state, ".text");
+    }
   else if (!strcmp(dir, ".db"))
     {}
   else if (!strcmp(dir, ".ds"))
@@ -44,7 +57,9 @@ static int parse_directive(struct asm_state_s *state, char *dir)
   else if (!strcmp(dir, ".ascii"))
     {}
   else
-    {}
+    {
+    ret = emit_error(state, "unknown directive '%s'", dir);
+    }
   return ASM_OK;
 }
 
@@ -84,9 +99,9 @@ static int parse_line(struct asm_state_s *state, int linelen)
       return ASM_OK;
     }
 
-  /* discard comments */
+  /* discard LINE comments */
 
-  if (*line==CONFIG_ASM_COMMENT)
+  if (*line==CONFIG_ASM_COMMENT_LINE)
     {
       return ASM_OK;
     }
@@ -124,10 +139,10 @@ printf("\nline  %s\n",line);
     }
 
 
-  /* if the line has a comment, cut the mnemo before that */
+  /* if the line has a CONTINUATION comment, cut the mnemo before that */
 
   line = mnemo;
-  while(*line && *line != CONFIG_ASM_COMMENT) line++;
+  while(*line && *line != CONFIG_ASM_COMMENT_CONT) line++;
   *line = 0;
 
   /* right trim spaces after mnemonic */
@@ -138,6 +153,7 @@ printf("\nline  %s\n",line);
       line--;
     }
 
+  /* parse elements */
   if (label)
     {
       ret = parse_label(state, label);

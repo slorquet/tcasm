@@ -104,7 +104,9 @@ struct asm_backend_s
 /* parse a source file into the state */
 
 int parse(struct asm_state_s *state);
+int parse_section(struct asm_state_s *state, const char *secname);
 int emit_error(struct asm_state_s *asmstate, const char *msg, ...);
+
 
 #endif /* __TCASM__H__ */
 
