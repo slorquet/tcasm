@@ -29,14 +29,28 @@ mnemocomment   @comment
 
 mnemocomment arg   @comment
 
+.data
+
 label: mnemocommentlbl   @comment
 
 label: mnemocommentlbl arg   @comment
 
 labnospc:plop
 
+.section .text
+
 #from martial
 label_no_space:@comment
 label_no_space:mnemo_no_space@comment
 mnemo_no_space@comment
+
+.string "test"
+
+.string "test1", "test2"
+.string "test1" , "test2"
+.data
+.string "test1" , "test2"
+.string "test1", "test2" 
+
+.string error
 

@@ -44,29 +44,7 @@ static int parse_directive(struct asm_state_s *state, char *dir)
   printf("direc [%s]\n", dir);
   if(*params) printf("params [%s]\n", params);
 
-  if (!strcmp(dir, ".section"))
-    {
-      char *ptr = params;
-      /* find end of section name */
-      while (*ptr && !(*ptr == ' ' || *ptr=='\t')) ptr++;
-      *ptr=0;
-      ret = parse_section(state, params);
-    }
-  else if (!strcmp(dir, ".text") || !strcmp(dir, ".data") || !strcmp(dir, ".bss"))
-    {
-      ret = parse_section(state, dir);
-    }
-  else if (!strcmp(dir, ".db"))
-    {}
-  else if (!strcmp(dir, ".ds"))
-    {}
-  else if (!strcmp(dir, ".ascii"))
-    {}
-  else
-    {
-    ret = emit_message(state, ASM_WARN, "unknown directive '%s'", dir);
-    }
-  return ASM_OK;
+  return directive(state, dir, params);
 }
 
 /*****************************************************************************/

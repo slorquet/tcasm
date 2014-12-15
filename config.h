@@ -35,5 +35,10 @@
 #define CONFIG_ASM_COMMENT_CONT '@'
 #endif
 
+/* Allocation chunk size */
+#ifndef CONFIG_ASM_CHUNK
+#define CONFIG_ASM_CHUNK 256
+#endif
+
 #endif /* __CONFIG__H__ */
 

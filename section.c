@@ -1,7 +1,5 @@
 #include "config.h"
 
-#include <stdio.h>
-#include <stdint.h>
 #include <string.h>
 
 #include "tcasm.h"
@@ -34,6 +32,7 @@ struct asm_section_s *section_find_create(struct asm_state_s *asmstate, const ch
 {
   int i;
 
+printf("sec_find_create: searching %s\n",secname);
   /* search for section */
   /* if found, return it */
 
@@ -41,6 +40,7 @@ struct asm_section_s *section_find_create(struct asm_state_s *asmstate, const ch
     {
       if (!strcmp(asmstate->sections[i].name, secname) )
         {
+printf("found\n");
           return &asmstate->sections[i];
         }
     }
@@ -52,6 +52,7 @@ struct asm_section_s *section_find_create(struct asm_state_s *asmstate, const ch
     {
       if (!asmstate->sections[i].name[0])
         {
+printf("initialized\n");
           strncpy(asmstate->sections[i].name, secname, 16);
           asmstate->sections[i].id = section_find_id(secname);
           return &asmstate->sections[i];

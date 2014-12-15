@@ -29,13 +29,20 @@ directives starts with a dot
 labels ends with a colon
 labels must not start with a number.
 (if the first word of a line does not ends with a colon, then it's a mnemonic.)
-
+multiple instructions per line are not supported
 
 generic directives are parsed by common code:
 .section <unquoted_name> .text .data .bss .rodata
-.ascii .asciiz
-.db .dw .ds
 .global .extern
+.incbin
+.end
+.align <power>[,<fill>] .balign <value>[,<fill>] .p2align <value>[,<fill>]
+.ds .space <size>[,<fill=0>]
+.ascii .asciz .string
+.db .byte 
+.dh .hword .short
+.dw 
+.float .single .double
 
 other directives are parsed by the code generator
 mnemonics are handled by the code generator

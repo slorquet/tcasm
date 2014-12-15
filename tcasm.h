@@ -1,6 +1,9 @@
 #ifndef __TCASM__H__
 #define __TCASM__H__
 
+#include <stdio.h>
+#include <stdint.h>
+
 enum section_names_e
 {
   SECTION_NONE,    /* no section yet*/
@@ -107,6 +110,8 @@ int emit_message(struct asm_state_s *asmstate, int type, const char *msg, ...);
 
 int parse(struct asm_state_s *state);
 int parse_section(struct asm_state_s *state, const char *secname);
+
+int directive(struct asm_state_s *state, char *dir, char *params);
 
 struct asm_section_s *section_find_create(struct asm_state_s *asmstate, const char *secname);
 
