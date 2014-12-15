@@ -3,6 +3,7 @@
 
 enum section_names_e
 {
+  SECTION_NONE,    /* no section yet*/
   SECTION_STRINGS, /* this section is used as a string table */
   SECTION_TEXT,    /* this section stores exec code */
   SECTION_RODATA,  /* this section stores constant data */
@@ -49,7 +50,7 @@ struct asm_reloc_s
 
 struct asm_section_s
 {
-  int  sec_id; /* fast section identification */
+  int  id; /* fast section identification */
   char name[CONFIG_ASM_SEC_NAME]; /* section name */
   struct asm_chunk_s *data; /* section contents */
   struct asm_reloc_s *relocs; /*undefined symbols*/
@@ -80,7 +81,7 @@ struct asm_state_s
   int  curline; /* current source line being read */
 
   /* intermediate state */
-  struct asm_section_s asm_sections[CONFIG_ASM_SEC_MAX]; /* storage for sections */
+  struct asm_section_s sections[CONFIG_ASM_SEC_MAX]; /* storage for sections */
   struct asm_section_s *current_section;
 
   /* output status */
@@ -102,9 +103,12 @@ struct asm_backend_s
 
 /* parse a source file into the state */
 
+int emit_message(struct asm_state_s *asmstate, int type, const char *msg, ...);
+
 int parse(struct asm_state_s *state);
 int parse_section(struct asm_state_s *state, const char *secname);
-int emit_message(struct asm_state_s *asmstate, int type, const char *msg, ...);
+
+struct asm_section_s *section_find_create(struct asm_state_s *asmstate, const char *secname);
 
 #endif /* __TCASM__H__ */
 

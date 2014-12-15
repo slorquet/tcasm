@@ -73,8 +73,13 @@ int emit_message(struct asm_state_s *asmstate, int type, const char *msg, ...)
 
 void init(struct asm_state_s *asmstate)
 {
+  int i;
   asmstate->outputname = NULL;
   asmstate->current_section = NULL;
+  for (i = 0; i<CONFIG_ASM_SEC_MAX; i++)
+    {
+      asmstate->sections[i].id = SECTION_NONE;
+    }
 }
 
 /*****************************************************************************/
