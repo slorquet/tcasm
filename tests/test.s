@@ -17,6 +17,8 @@ mnemo2_nospaces
 
 	tablabel:
 
+.section test
+
   spacelabel:   spacemnemo
 
   spacelabel:   spacemnemo2 arg, val

@@ -47,15 +47,26 @@ int usage(void)
 
 /*****************************************************************************/
 
-int emit_error(struct asm_state_s *asmstate, const char *msg, ...)
+static const char * msgtypes[] = 
+{
+  "message",
+  "warning",
+  "error",
+};
+
+int emit_message(struct asm_state_s *asmstate, int type, const char *msg, ...)
 {
   va_list ap;
+  if (type > (sizeof(msgtypes)/sizeof(msgtypes[0])))
+    {
+    type = 0;
+    }
   va_start(ap, msg);
-  fprintf(stderr, "%s:%d: error: ",asmstate->inputname, asmstate->curline);
+  fprintf(stderr, "%s:%d: %s: ",asmstate->inputname, asmstate->curline, msgtypes[type]);
   vfprintf(stderr, msg, ap);
   fprintf(stderr, "\n");
   va_end(ap);
-  return ASM_ERROR;
+  return type;
 }
 
 /*****************************************************************************/
@@ -98,7 +109,7 @@ int main(int argc, char **argv)
   if (optind == argc)
     {
       printf("tcasm: no input files\n");
-      goto done;
+      goto donefree;
     }
 
   /* Parse each input file */
@@ -113,7 +124,7 @@ int main(int argc, char **argv)
         }
     }
 
-  /* resolve symbols after all files have been parsed */
+  /* linking stage : resolve symbols after all files have been parsed */
 
   /* Define output file name if none was given */
 
@@ -138,6 +149,5 @@ int main(int argc, char **argv)
 
 donefree:
   free(state.outputname);
-done:
   return ret;
 }

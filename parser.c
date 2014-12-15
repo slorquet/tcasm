@@ -14,7 +14,7 @@ static int parse_label(struct asm_state_s *state, char *label)
   printf("label [%s]\n", label);
   if (label[0] >= '0' && label[0]<='9')
     {
-      return emit_error(state, "invalid label '%s'",label);
+      return emit_message(state, ASM_ERROR, "invalid label '%s'",label);
     }
   return ASM_OK;
 }
@@ -38,6 +38,7 @@ static int parse_directive(struct asm_state_s *state, char *dir)
   params = dir;
   while (*params && !(*params == ' ' || *params=='\t')) params++;
   *params = 0;
+  params++;
   while (*params && (*params == ' ' || *params=='\t')) params++;
 
   printf("direc [%s]\n", dir);
@@ -45,10 +46,15 @@ static int parse_directive(struct asm_state_s *state, char *dir)
 
   if (!strcmp(dir, ".section"))
     {
+      char *ptr = params;
+      /* find end of section name */
+      while (*ptr && !(*ptr == ' ' || *ptr=='\t')) ptr++;
+      *ptr=0;
+      ret = parse_section(state, params);
     }
-  else if (!strcmp(dir, ".text"))
+  else if (!strcmp(dir, ".text") || !strcmp(dir, ".data") || !strcmp(dir, ".bss"))
     {
-    ret = parse_section(state, ".text");
+      ret = parse_section(state, dir);
     }
   else if (!strcmp(dir, ".db"))
     {}
@@ -58,7 +64,7 @@ static int parse_directive(struct asm_state_s *state, char *dir)
     {}
   else
     {
-    ret = emit_error(state, "unknown directive '%s'", dir);
+    ret = emit_message(state, ASM_WARN, "unknown directive '%s'", dir);
     }
   return ASM_OK;
 }

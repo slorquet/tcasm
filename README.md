@@ -32,7 +32,7 @@ labels must not start with a number.
 
 
 generic directives are parsed by common code:
-.section <name> .text .data .bss .rodata
+.section <unquoted_name> .text .data .bss .rodata
 .ascii .asciiz
 .db .dw .ds
 .global .extern

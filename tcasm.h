@@ -34,14 +34,14 @@ struct asm_chunk_s
 };
 
 /*****************************************************************************/
-/* This structure is a relocation. All relocs are stored in a section*/
+/* This structure is a relocation, a symbol reference. Each section has relocs.*/
 
 struct asm_reloc_s
 {
-  struct asm_reloc_s  *next;   /*these are chained */
-  uint32_t            offset;  /* section offset where the relocation must be set */
-  uint32_t            type;    /* type (PC relative, absolute, etc */
-  struct asm_symbol_s *symbol; /* symbol reference */
+  struct asm_reloc_s   *next;   /*these are chained */
+  uint32_t             offset;  /* section offset where the relocation must be set */
+  uint32_t             type;    /* type (PC relative, absolute, etc */
+  char                 *symbolname; /* symbol reference */
 };
 
 /*****************************************************************************/
@@ -52,17 +52,16 @@ struct asm_section_s
   int  sec_id; /* fast section identification */
   char name[CONFIG_ASM_SEC_NAME]; /* section name */
   struct asm_chunk_s *data; /* section contents */
-  struct asm_reloc_s *relocs;
+  struct asm_reloc_s *relocs; /*undefined symbols*/
 };
 
 /*****************************************************************************/
-/* This structure is a symbol. It has a pointer to a name and a value. */
+/* This structure is a DEFINED symbol (label). */
 
 struct asm_symbol_s
 {
-  char                 *name;            /* pointer to an entry in the string table section */
-  struct asm_section_s *holding_section; /* section in which the symbol is defined */
-  uint32_t value;                        /* memory offset of the symbol within its section */
+  char     *name; /* pointer to an entry in the string table section */
+  uint32_t value; /* memory offset of the symbol within its section */
 };
 
 /*****************************************************************************/
@@ -105,8 +104,7 @@ struct asm_backend_s
 
 int parse(struct asm_state_s *state);
 int parse_section(struct asm_state_s *state, const char *secname);
-int emit_error(struct asm_state_s *asmstate, const char *msg, ...);
-
+int emit_message(struct asm_state_s *asmstate, int type, const char *msg, ...);
 
 #endif /* __TCASM__H__ */
 
