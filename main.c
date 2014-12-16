@@ -30,16 +30,18 @@
 
 /* these definitions depend on the presence of backends */
 
-#ifdef CONFIG_ASM_HAVE_ARM
-extern arm_backend,
+#ifdef CONFIG_ASM_TARGET_ARM
+extern struct asm_backend_s arm_backend;
 #endif
 
 static struct asm_backend_s * backends[] = 
 {
-#ifdef CONFIG_ASM_HAVE_ARM
-  arm_backend,
+#ifdef CONFIG_ASM_TARGET_ARM
+  &arm_backend,
 #endif
 };
+
+#define ASM_BACKEND_COUNT (sizeof(backends) / sizeof(backends[0]))
 
 static struct asm_state_s state;
 
@@ -47,7 +49,7 @@ static struct asm_state_s state;
  * Functions
  *****************************************************************************/
 
-int usage(void)
+void usage(void)
 {
   printf("Mini assembler\n"
          "tcasm [options] infile [infile...]\n"
@@ -55,7 +57,22 @@ int usage(void)
          "  -l list targets and exit\n"
          "  -t <target> select target\n"
         );
-  return 0;
+}
+
+/*****************************************************************************/
+
+void version(void)
+{
+  int i;
+  struct asm_backend_infos_s infos;
+  printf("tcasm version " CONFIG_ASM_VERSION "\n" );
+  printf("Configured backends:");
+  for (i=0; i<ASM_BACKEND_COUNT; i++)
+    {
+      backends[i]->getinfos(&infos);
+      printf(" %s", infos.name);
+    }
+  printf("\n");
 }
 
 /*****************************************************************************/
@@ -109,11 +126,21 @@ int main(int argc, char **argv)
 
   /* Update the assembler state using options */
 
-  while ((option = getopt(argc, argv, "o:")) != -1)
+  while ((option = getopt(argc, argv, "vho:")) != -1)
     {
       if (option == 'o')
         {
           state.outputname = strdup(optarg);
+        }
+      else if (option == 'h')
+        {
+          usage();
+          return 0;
+        }
+      else if (option == 'v')
+        {
+          version();
+          return 0;
         }
       else
         {

@@ -103,11 +103,16 @@ struct asm_state_s
 
 /* this structure describes a target backend */
 
+struct asm_backend_infos_s
+{
+  char *name;
+  int endianess;
+};
+
 struct asm_backend_s
 {
-  void *priv;
-  int endianess;
-  int (*directive)(struct asm_backend_s *backend, struct asm_state_s *state, char *buf);
+  int (*getinfos)(struct asm_backend_infos_s *infos);
+  int (*directive)(const struct asm_backend_s *backend, struct asm_state_s *state, char *buf);
 };
 
 /*****************************************************************************/

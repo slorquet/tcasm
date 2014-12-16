@@ -5,6 +5,12 @@
  * TCASM Config Definitions
  *****************************************************************************/
 
+/* Program version */
+#define CONFIG_ASM_VERSION "0.99"
+
+/* Configured targets */
+#define CONFIG_ASM_TARGET_ARM 1
+
 /* Maximum length of section name */
 #ifndef CONFIG_ASM_SEC_NAME
 #define CONFIG_ASM_SEC_NAME 8
@@ -15,10 +21,6 @@
 #define CONFIG_ASM_SEC_MAX 5 /*text, rodata, data, bss, strings*/
 #endif
 
-/* Current target */
-#ifndef CONFIG_ASM_TARGET
-#define CONFIG_ASM_TARGET CONFIG_ASM_TARGET_ARM
-#endif
 
 /* Input file buffer size */
 #ifndef CONFIG_ASM_INBUF_SIZE
