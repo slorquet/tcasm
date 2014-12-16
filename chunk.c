@@ -4,8 +4,9 @@
 
 #include "tcasm.h"
 
-/* Append data to chunk, possibly splitting data in multiple blocks
+/* Append data to chunk, possibly splitting data in multiple blocks.
  * The chunk list may be modified. Always succeed if there is enough memory.
+ * This routine fills chunks to their maximum possible size.
  */
 
 int chunk_append(struct asm_state_s *state, struct asm_chunk_s **chlist, void *base, int len)
@@ -14,6 +15,7 @@ int chunk_append(struct asm_state_s *state, struct asm_chunk_s **chlist, void *b
   struct asm_chunk_s *prev = NULL;
   int copy;
 
+  printf("TODO: %d bytes\n",len);
   /* seek to end of chain */
 
   while (ch) 
@@ -21,10 +23,11 @@ int chunk_append(struct asm_state_s *state, struct asm_chunk_s **chlist, void *b
       prev = ch;
       ch = ch->next;
     }
+  ch = prev;
 
   /* now ch is null and prev is the last chunk, or null if the chain is empty */
 
-  if (prev)
+  if (ch)
     {
       /* the chain has a chunk */
       printf("we have a chunk with %d bytes free\n", CONFIG_ASM_CHUNK - prev->len);
@@ -32,53 +35,57 @@ int chunk_append(struct asm_state_s *state, struct asm_chunk_s **chlist, void *b
   else
     {
       /* the chain is empty, create the first chunk */
-      prev = malloc(CONFIG_ASM_CHUNK+sizeof(struct asm_chunk_s));
-      if (!prev)
+      ch = malloc(CONFIG_ASM_CHUNK+sizeof(struct asm_chunk_s));
+      if (!ch)
         {
           return emit_message(state, ASM_ERROR, "malloc() failed");
         }
-      prev->data = (unsigned char*)(&prev[1]);
-      prev->len  = 0;
-      prev->next = NULL;
-      *chlist = prev; /* we have allocated the first block of the chain */
-      printf("made new chunk\n");
+      ch->data = (unsigned char*)(&ch[1]);
+      ch->len  = 0;
+      ch->next = NULL;
+      *chlist = ch; /* we have allocated the first block of the chain */
+      printf("made initial chunk\n");
     }
 
   /* copy as many data as possible */
-  copy = len;
-  if (copy > (CONFIG_ASM_CHUNK - prev->len))
-    {
-      copy = CONFIG_ASM_CHUNK - prev->len;
-    }
-  memcpy(prev->data + prev->len, base, copy);
-  prev->len += copy;
-  printf("copied %d bytes, remaining in chunk:%d\n",len, (CONFIG_ASM_CHUNK - prev->len));
-  base += copy;
-  len -= copy;
-
-  /* copy remaining data */
 
   while (len > 0)
     {
-    copy = len;
-    if (copy > (CONFIG_ASM_CHUNK - prev->len))
-      {
-        copy = CONFIG_ASM_CHUNK - prev->len;
-      }
-    printf("still %d to copy, prev can hold %d\n",len, copy);
-    if (copy==0)
-      {
-        printf("new chunk\n");
-        copy = CONFIG_ASM_CHUNK;
-      }
-    printf("copied: %d\n", copy);
-    len -= copy;
+      copy = len;
+      if (copy > (CONFIG_ASM_CHUNK - ch->len))
+        {
+          copy = CONFIG_ASM_CHUNK - ch->len;
+        }
+      printf("cur chunk can contain: %d\n", CONFIG_ASM_CHUNK - ch->len);
+      if (copy==0)
+        {
+          /* no room in current chunk */
+          printf("new chunk required\n");
+          prev = ch;
+          ch = malloc(CONFIG_ASM_CHUNK+sizeof(struct asm_chunk_s));
+          if (!ch)
+            {
+              return emit_message(state, ASM_ERROR, "malloc() failed");
+            }
+          ch->data = (unsigned char*)(&ch[1]);
+          ch->len  = 0;
+          ch->next = NULL;
+          prev->next = ch;
+          continue;
+        }
+      printf("total remaining %d, will store %d\n",len,copy);
+      memcpy(ch->data + ch->len, base, copy);
+      ch->len += copy;
+      printf("copied %d bytes, remaining in chunk:%d\n", copy, (CONFIG_ASM_CHUNK - ch->len));
+      base += copy;
+      len -= copy;
     }
 }
 
 /* Append data to chunk NOT splitting it. Used for symbol strings.
  * The chunk list may be modified. 
  * May fail if the block cannot fit the maximum chunk size.
+ * This routine may not fill chunks to their maximum possible size (if a block doesnt fit).
  */
 
 int chunk_append_block(struct asm_state_s *state, struct asm_chunk_s **chlist, void *base, int len)
