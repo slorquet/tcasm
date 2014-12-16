@@ -28,6 +28,19 @@
  * Variables
  *****************************************************************************/
 
+/* these definitions depend on the presence of backends */
+
+#ifdef CONFIG_ASM_HAVE_ARM
+extern arm_backend,
+#endif
+
+static struct asm_backend_s * backends[] = 
+{
+#ifdef CONFIG_ASM_HAVE_ARM
+  arm_backend,
+#endif
+};
+
 static struct asm_state_s state;
 
 /*****************************************************************************

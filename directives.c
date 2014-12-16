@@ -6,7 +6,9 @@
 
 #include "tcasm.h"
 
-int directive_cb_append_string(struct asm_state_s *state, char **str, int arg)
+/* Append a string to the current section, possibly adding a final zero. */
+
+static int directive_cb_append_string(struct asm_state_s *state, char **str, int arg)
 {
   char *base = *str;
   //skip to end of string
@@ -26,6 +28,31 @@ int directive_cb_append_string(struct asm_state_s *state, char **str, int arg)
     {
       chunk_append(state, &state->current_section->data, "", 1);
     }
+  return ASM_OK;
+}
+
+/* Append a number to the current section. arg is number of bytes */
+
+static int directive_cb_append_number(struct asm_state_s *state, char **str, int arg)
+{
+  long val;
+  char *rest;
+
+  val = strtol(*str, &rest, 0);
+
+  /*printf("parsed val=%ld, after number : %s\n",val, rest);*/
+
+  /* if what follows is not a sep, then we have garbage */
+  if ( *rest && !(*rest==' ' || *rest=='\t' || *rest==',') )
+    {
+      return emit_message(state, ASM_ERROR, "Invalid number: near %s", *str);
+    }
+
+  /* eat all non-seps */
+  while(*rest && !(*rest==' ' || *rest=='\t' || *rest==',')) rest++;
+
+  *str = rest;
+
   return ASM_OK;
 }
 
@@ -64,7 +91,9 @@ int directive(struct asm_state_s *state, char *dir, char *params)
       ret = parse_section(state, dir);
     }
   else if (!strcmp(dir, ".db") || !strcmp(dir, ".byte") )
-    {}
+    {
+      ret = directive_for_each_param(state, params, directive_cb_append_number, 1);
+    }
   else if (!strcmp(dir, ".ds"))
     {}
   else if (!strcmp(dir, ".ascii") || !strcmp(dir, ".string") || !strcmp(dir, ".asciz") )

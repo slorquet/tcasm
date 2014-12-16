@@ -80,6 +80,14 @@ int chunk_append(struct asm_state_s *state, struct asm_chunk_s **chlist, void *b
       base += copy;
       len -= copy;
     }
+
+  printf("summary\n");
+  ch = *chlist;
+  while (ch)
+    {
+      printf("chunk @ %p len=%d\n",ch, ch->len);
+      ch = ch->next;
+    }
 }
 
 /* Append data to chunk NOT splitting it. Used for symbol strings.

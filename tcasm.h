@@ -22,6 +22,13 @@ enum asm_error_e
   ASM_ERROR
 };
 
+enum asm_endian_e
+{
+  ASM_ENDIAN_UNDEF,
+  ASM_ENDIAN_LITTLE,
+  ASM_ENDIAN_BIG
+};
+
 /*****************************************************************************
  * Types
  *****************************************************************************/
@@ -99,10 +106,13 @@ struct asm_state_s
 struct asm_backend_s
 {
   void *priv;
+  int endianess;
   int (*directive)(struct asm_backend_s *backend, struct asm_state_s *state, char *buf);
 };
 
 /*****************************************************************************/
+
+
 
 /* parse a source file into the state */
 
