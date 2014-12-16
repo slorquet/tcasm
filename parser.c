@@ -186,6 +186,10 @@ int parse(struct asm_state_s *state)
       state->curline += 1;
       l = strlen(p);
       toolong = (p[l-1] != '\n');
+      if (toolong)
+        {
+          emit_message(state, ASM_WARN, "Long line truncated");
+        }
       ret = parse_line(state,l);
       if (ret == ASM_ERROR)
         {

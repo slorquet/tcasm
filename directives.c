@@ -18,8 +18,14 @@ int directive_cb_append_string(struct asm_state_s *state, char **str, int arg)
   (*str)++;
   while (**str && **str!='"') (*str)++;
   **str=0;
+  (*str)++; /* ready for next param */
+
   printf("in section [%s] append string %s'%s'\n",state->current_section->name, arg?"with zeros ":"", base);
-  (*str)++;
+  chunk_append(state, &state->current_section->data, base, strlen(base));
+  if (arg)
+    {
+      chunk_append(state, &state->current_section->data, "", 1);
+    }
   return ASM_OK;
 }
 

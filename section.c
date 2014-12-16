@@ -32,36 +32,33 @@ struct asm_section_s *section_find_create(struct asm_state_s *asmstate, const ch
 {
   int i;
 
-printf("sec_find_create: searching %s\n",secname);
-  /* search for section */
-  /* if found, return it */
+  /* search for section. if found, return it */
 
   for (i = 0; i<CONFIG_ASM_SEC_MAX; i++)
     {
       if (!strcmp(asmstate->sections[i].name, secname) )
         {
-printf("found\n");
+          printf("section '%s' found\n", secname);
           return &asmstate->sections[i];
         }
     }
-
-  /* find id for special names */
 
   /* else, create it */
   for (i = 0; i<CONFIG_ASM_SEC_MAX; i++)
     {
       if (!asmstate->sections[i].name[0])
         {
-printf("initialized\n");
+          printf("section '%s' initialized\n", secname);
           strncpy(asmstate->sections[i].name, secname, 16);
-          asmstate->sections[i].id = section_find_id(secname);
+          asmstate->sections[i].id   = section_find_id(secname);
+          asmstate->sections[i].data = NULL;
           return &asmstate->sections[i];
         }
     }
 
-  /* no slot found */
+  /* no section found and no room to initialize */
 
-  emit_message(asmstate, ASM_ERROR, "Too many section, cannot create '%s'", secname);
+  emit_message(asmstate, ASM_ERROR, "Too many sections, cannot create '%s'", secname);
   return NULL;
 }
 

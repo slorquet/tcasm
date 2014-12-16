@@ -115,5 +115,8 @@ int directive(struct asm_state_s *state, char *dir, char *params);
 
 struct asm_section_s *section_find_create(struct asm_state_s *asmstate, const char *secname);
 
+int chunk_append(struct asm_state_s *state, struct asm_chunk_s **chlist, void *base, int len);
+int chunk_append_block(struct asm_state_s *state, struct asm_chunk_s **chlist, void *base, int len);
+
 #endif /* __TCASM__H__ */
 
