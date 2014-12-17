@@ -77,6 +77,22 @@ struct asm_symbol_s
 
 /*****************************************************************************/
 
+/* this structure describes a target backend */
+
+struct asm_backend_infos_s
+{
+  char *name;
+  int endianess;
+};
+
+struct asm_backend_s
+{
+  int (*getinfos)(struct asm_backend_infos_s *infos);
+  int (*directive)(const struct asm_backend_s *backend, struct asm_state_s *state, char *buf);
+};
+
+/*****************************************************************************/
+
 /* this structure stores the entirety of all asm variables */
 
 struct asm_state_s
@@ -93,26 +109,11 @@ struct asm_state_s
   /* intermediate state */
   struct asm_section_s sections[CONFIG_ASM_SEC_MAX]; /* storage for sections */
   struct asm_section_s *current_section;
+  struct asm_backend_s *current_backend;
 
   /* output status */
   FILE *output; /* output file */
 
-};
-
-/*****************************************************************************/
-
-/* this structure describes a target backend */
-
-struct asm_backend_infos_s
-{
-  char *name;
-  int endianess;
-};
-
-struct asm_backend_s
-{
-  int (*getinfos)(struct asm_backend_infos_s *infos);
-  int (*directive)(const struct asm_backend_s *backend, struct asm_state_s *state, char *buf);
 };
 
 /*****************************************************************************/

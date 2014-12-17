@@ -31,13 +31,59 @@ static int directive_cb_append_string(struct asm_state_s *state, char **str, int
   return ASM_OK;
 }
 
+static void number_encode(uint8_t *dest, int val, int size, int endianess)
+{
+  if (size<1 || size>4)
+    {
+      return;
+    }
+  if (endianess == ASM_ENDIAN_LITTLE)
+    {
+      dest[0]     = (val      ) & 0xFF;
+      if (size>1)
+        {
+          dest[1] = (val >>  8) & 0xFF;
+        }
+      if (size>2)
+        {
+          dest[2] = (val >> 16) & 0xFF;
+        }
+      if (size>3)
+        {
+          dest[3] = (val >> 24) & 0xFF;
+        }
+    }
+  else if (endianess == ASM_ENDIAN_BIG)
+    {
+      int off = 0;
+      if (size>3)
+        {
+          dest[off++] = (val >> 24) & 0xFF;
+        }
+      if (size>2)
+        {
+          dest[off++] = (val >> 16) & 0xFF;
+        }
+      if (size>1)
+        {
+          dest[off++] = (val >>  8) & 0xFF;
+        }
+      dest[off++]     = (val      ) & 0xFF;
+    }
+  else
+    {
+      /* undefined endianess */
+    }
+}
+
 /* Append a number to the current section. arg is number of bytes */
 
 static int directive_cb_append_number(struct asm_state_s *state, char **str, int arg)
 {
   long val;
   char *rest;
-
+  uint8_t encoded;
+  struct asm_backend_info_s info;
   val = strtol(*str, &rest, 0);
 
   /*printf("parsed val=%ld, after number : %s\n",val, rest);*/
@@ -52,6 +98,11 @@ static int directive_cb_append_number(struct asm_state_s *state, char **str, int
   while(*rest && !(*rest==' ' || *rest=='\t' || *rest==',')) rest++;
 
   *str = rest;
+
+  /* add to current section */
+  state->current_backend->getinfos(&info);
+  number_encode(encoded, val, arg, info->endianess);
+  chunk_append(state, &state->current_section->data, encoded, arg);
 
   return ASM_OK;
 }
