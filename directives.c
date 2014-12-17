@@ -82,8 +82,8 @@ static int directive_cb_append_number(struct asm_state_s *state, char **str, int
 {
   long val;
   char *rest;
-  uint8_t encoded;
-  struct asm_backend_info_s info;
+  uint8_t encoded[4];
+  struct asm_backend_infos_s info;
   val = strtol(*str, &rest, 0);
 
   /*printf("parsed val=%ld, after number : %s\n",val, rest);*/
@@ -101,7 +101,7 @@ static int directive_cb_append_number(struct asm_state_s *state, char **str, int
 
   /* add to current section */
   state->current_backend->getinfos(&info);
-  number_encode(encoded, val, arg, info->endianess);
+  number_encode(encoded, val, arg, info.endianess);
   chunk_append(state, &state->current_section->data, encoded, arg);
 
   return ASM_OK;

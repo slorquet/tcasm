@@ -157,6 +157,17 @@ int main(int argc, char **argv)
       goto donefree;
     }
 
+  /* Determine the correct backend */
+  if (ASM_BACKEND_COUNT==1)
+    {
+      state.current_backend = backends[0];
+    }
+  else
+    {
+      printf("More than one backend available, choose with -b (TODO)\n");
+      return 1;
+    }
+
   /* Parse each input file */
 
   for(index=optind;index<argc;index++)
