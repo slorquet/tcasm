@@ -32,17 +32,17 @@ labels must not start with a number.
 multiple instructions per line are not supported
 
 generic directives are parsed by common code:
-.section <unquoted_name> .text .data .bss .rodata
-.global .extern
-.incbin
-.end
-.align <power>[,<fill>] .balign <value>[,<fill>] .p2align <value>[,<fill>]
-.ds .space <size>[,<fill=0>]
-.ascii .asciz .string
-.db .byte 
-.dh .hword .short
-.dw 
-.float .single .double
+[todo] .global .extern
+[todo] .incbin
+[todo] .end
+[todo] .align <power>[,<fill>] .balign <value>[,<fill>] .p2align <value>[,<fill>]
+[todo] .dw .word .int .long
+[todo] .float .single .double
+[done] .ds .space <size>[,<fill=0>]
+[done] .section <unquoted_name> .text .data .bss .rodata
+[done] .ascii .asciz .string <quoted string>
+[done] .db .byte 
+[done] .dh .hword .short
 
 other directives are parsed by the code generator
 mnemonics are handled by the code generator

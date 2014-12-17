@@ -6,6 +6,64 @@
 
 #include "tcasm.h"
 
+/*****************************************************************************/
+
+static int parse_section(struct asm_state_s *state, const char *secname)
+{
+  printf("section [%s]\n", secname);
+  state->current_section = section_find_create(state, secname);
+
+  return ASM_OK;
+}
+
+/*****************************************************************************/
+
+/* .ds / .space <size> [, <fillbyte>] */
+static int parse_space(struct asm_state_s *state, const char *params)
+{
+  uint8_t buf[8];
+  uint32_t size,step;
+  char *rest;
+  uint8_t fill = 0;
+
+  printf("space ->%s\n", params);
+
+  /* eat spaces */
+  while (*params && (*params==' ' || *params=='\t')) params++;
+  printf("after ->'%s'\n", params);
+  if (!params)
+    {
+    return emit_message(state, ASM_ERROR, "bad space directive");
+    }
+  size = strtol(params, &rest, 0);
+  params = rest;
+  printf("size: %d\n",size);
+  /* eat spaces */
+  while (*params && (*params==' ' || *params=='\t' || *params==',')) params++;
+
+  printf("after ->'%s'\n", params);
+  if(*params)
+    {
+    fill = strtol(params, &rest, 0);
+    }
+  printf("fill: %u\n",fill);
+
+  /* do the fill */
+
+  memset(buf, fill, 8);
+  while (size>0)
+    {
+      step = size;
+      if (step>8) step = 8;
+      chunk_append(state, &state->current_section->data, buf, step);
+      size -= step;
+    }
+ 
+  return ASM_OK;
+}
+
+/*****************************************************************************/
+
 /* Append a string to the current section, possibly adding a final zero. */
 
 static int directive_cb_append_string(struct asm_state_s *state, char **str, int arg)
@@ -30,6 +88,8 @@ static int directive_cb_append_string(struct asm_state_s *state, char **str, int
     }
   return ASM_OK;
 }
+
+/*****************************************************************************/
 
 static void number_encode(uint8_t *dest, int val, int size, int endianess)
 {
@@ -76,6 +136,8 @@ static void number_encode(uint8_t *dest, int val, int size, int endianess)
     }
 }
 
+/*****************************************************************************/
+
 /* Append a number to the current section. arg is number of bytes */
 
 static int directive_cb_append_number(struct asm_state_s *state, char **str, int arg)
@@ -107,6 +169,8 @@ static int directive_cb_append_number(struct asm_state_s *state, char **str, int
   return ASM_OK;
 }
 
+/*****************************************************************************/
+
 /* excute the provided callback for each comma-separated value in param, passing arg to each call. */
 
 int directive_for_each_param(struct asm_state_s *state, char *params, int (*callback)(struct asm_state_s *state, char **param, int arg), int arg)
@@ -124,6 +188,8 @@ int directive_for_each_param(struct asm_state_s *state, char *params, int (*call
     return ASM_OK;
 }
 
+/*****************************************************************************/
+
 /* manage directives */
 
 int directive(struct asm_state_s *state, char *dir, char *params)
@@ -137,7 +203,7 @@ int directive(struct asm_state_s *state, char *dir, char *params)
       *ptr=0;
       ret = parse_section(state, params);
     }
-  else if (!strcmp(dir, ".text") || !strcmp(dir, ".data") || !strcmp(dir, ".bss"))
+  else if (!strcmp(dir, ".text") || !strcmp(dir, ".data") || !strcmp(dir, ".bss") || !strcmp(dir, ".rodata") )
     {
       ret = parse_section(state, dir);
     }
@@ -145,8 +211,14 @@ int directive(struct asm_state_s *state, char *dir, char *params)
     {
       ret = directive_for_each_param(state, params, directive_cb_append_number, 1);
     }
-  else if (!strcmp(dir, ".ds"))
-    {}
+  else if (!strcmp(dir, ".dh") || !strcmp(dir, ".hword") || !strcmp(dir, ".short")  )
+    {
+      ret = directive_for_each_param(state, params, directive_cb_append_number, 2);
+    }
+  else if (!strcmp(dir, ".ds") || !strcmp(dir, ".space") )
+    {
+      ret = parse_space(state, params);
+    }
   else if (!strcmp(dir, ".ascii") || !strcmp(dir, ".string") || !strcmp(dir, ".asciz") )
     {
       ret = directive_for_each_param(state, params, directive_cb_append_string, !strcmp(dir, ".asciz"));
@@ -156,15 +228,5 @@ int directive(struct asm_state_s *state, char *dir, char *params)
     ret = emit_message(state, ASM_WARN, "unknown directive '%s'", dir);
     }
   return ret;
-}
-
-/*****************************************************************************/
-
-int parse_section(struct asm_state_s *state, const char *secname)
-{
-  printf("section [%s]\n", secname);
-  state->current_section = section_find_create(state, secname);
-
-  return ASM_OK;
 }
 

@@ -6,7 +6,7 @@ CC = gcc
 CFLAGS = -g
 
 $(BIN): $(OBJS)
-	$(CC) $(OBJS) -o $@
+	$(CC) -static $(OBJS) -o $@
 
 clean:
 	rm -f $(BIN)

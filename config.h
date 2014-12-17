@@ -6,7 +6,7 @@
  *****************************************************************************/
 
 /* Program version */
-#define CONFIG_ASM_VERSION "0.99"
+#define CONFIG_ASM_VERSION "0.01"
 
 /* Configured targets */
 #define CONFIG_ASM_TARGET_ARM 1

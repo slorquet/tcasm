@@ -125,7 +125,6 @@ struct asm_backend_s
 int emit_message(struct asm_state_s *asmstate, int type, const char *msg, ...);
 
 int parse(struct asm_state_s *state);
-int parse_section(struct asm_state_s *state, const char *secname);
 
 int directive(struct asm_state_s *state, char *dir, char *params);
 
