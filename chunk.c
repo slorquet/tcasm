@@ -118,3 +118,17 @@ int chunk_append(struct asm_state_s *state, struct asm_chunk_s **chlist, void *b
 int chunk_append_block(struct asm_state_s *state, struct asm_chunk_s **chlist, void *base, int len)
 {
 }
+
+/* return the total size of a chunk list */
+
+uint32_t chunk_totalsize(struct asm_chunk_s *chlist)
+{
+  uint32_t total = 0;
+  while (chlist)
+    {
+      total += chlist->len;
+      chlist = chlist->next;
+    }
+  return total;
+}
+

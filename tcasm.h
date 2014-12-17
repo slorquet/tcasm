@@ -132,6 +132,7 @@ struct asm_section_s *section_find_create(struct asm_state_s *asmstate, const ch
 
 int chunk_append(struct asm_state_s *state, struct asm_chunk_s **chlist, void *base, int len);
 int chunk_append_block(struct asm_state_s *state, struct asm_chunk_s **chlist, void *base, int len);
+uint32_t chunk_totalsize(struct asm_chunk_s *chlist);
 
 #endif /* __TCASM__H__ */
 

@@ -210,7 +210,7 @@ int main(int argc, char **argv)
         {
           continue;
         }
-      printf("Contents of section %s\n", state.sections[index].name);
+      printf("Contents of section %s: %u bytes\n", state.sections[index].name, chunk_totalsize(state.sections[index].data) );
       while (chunk)
         {
           printf("chunk @ %p len %u\n", chunk, chunk->len);
