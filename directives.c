@@ -6,11 +6,16 @@
 
 #include "tcasm.h"
 
+#define DEBUG 0
+#define DEBUG_DIR 2
+
 /*****************************************************************************/
 
 static int parse_section(struct asm_state_s *state, const char *secname)
 {
+#if DEBUG & DEBUG_DIR
   printf("section [%s]\n", secname);
+#endif
   state->current_section = section_find_create(state, secname);
 
   return ASM_OK;
@@ -26,27 +31,51 @@ static int parse_space(struct asm_state_s *state, const char *params)
   char *rest;
   uint8_t fill = 0;
 
+#if DEBUG & DEBUG_DIR
   printf("space ->%s\n", params);
+#endif
 
   /* eat spaces */
   while (*params && (*params==' ' || *params=='\t')) params++;
+#if DEBUG & DEBUG_DIR
   printf("after ->'%s'\n", params);
+#endif
   if (!params)
     {
     return emit_message(state, ASM_ERROR, "bad space directive");
     }
   size = strtol(params, &rest, 0);
+
+  /* if what follows is not a sep, then we have garbage */
+  if ( *rest && !(*rest==' ' || *rest=='\t' || *rest==',') )
+    {
+      return emit_message(state, ASM_ERROR, "Invalid number: near %s", params);
+    }
+
   params = rest;
+#if DEBUG & DEBUG_DIR
   printf("size: %d\n",size);
+#endif
+
   /* eat spaces */
+
   while (*params && (*params==' ' || *params=='\t' || *params==',')) params++;
 
+#if DEBUG & DEBUG_DIR
   printf("after ->'%s'\n", params);
+#endif
   if(*params)
     {
     fill = strtol(params, &rest, 0);
+      /* if what follows is not a sep, then we have garbage */
+      if ( *rest && !(*rest==' ' || *rest=='\t' || *rest==',') )
+        {
+          return emit_message(state, ASM_ERROR, "Invalid number: near %s", params);
+        }
     }
+#if DEBUG & DEBUG_DIR
   printf("fill: %u\n",fill);
+#endif
 
   /* do the fill */
 
@@ -80,7 +109,9 @@ static int directive_cb_append_string(struct asm_state_s *state, char **str, int
   **str=0;
   (*str)++; /* ready for next param */
 
+#if DEBUG & DEBUG_DIR
   printf("in section [%s] append string %s'%s'\n",state->current_section->name, arg?"with zeros ":"", base);
+#endif
   chunk_append(state, &state->current_section->data, base, strlen(base));
   if (arg)
     {

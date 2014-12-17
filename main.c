@@ -200,6 +200,39 @@ int main(int argc, char **argv)
   printf("Output file name: %s\n",state.outputname);
 
   /* Write output file */
+  /* For now we just dump the sections */
+  for (index = 0; index < CONFIG_ASM_SEC_MAX; index++)
+    {
+      uint32_t i;
+      uint32_t offset = 0;
+      struct asm_chunk_s *chunk = state.sections[index].data;
+      if(!chunk)
+        {
+          continue;
+        }
+      printf("Contents of section %s\n", state.sections[index].name);
+      while (chunk)
+        {
+          printf("chunk @ %p len %u\n", chunk, chunk->len);
+          for (i = 0; i < chunk->len; i++, offset++)
+            {
+              if ((offset&15) == 0)
+                {
+                  printf("%08X: ", offset);
+                }
+              printf("%02X ", chunk->data[i]);
+              if ((offset&15) == 15)
+                {
+                  printf("\n");
+                }
+            }
+          if ((offset&15))
+            {
+              printf("\n");
+            }
+          chunk = chunk->next;
+        }
+    }
 
   /* Cleanup */
 
