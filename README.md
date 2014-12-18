@@ -16,7 +16,7 @@ The lines have the following syntax:
 
     This is close to the gas syntax, as described here:
     https://sourceware.org/binutils/docs/as/Statements.html#Statements
-    only one label per line is supported.
+    Only one label per line is supported.
 
 So here are the rules:
 

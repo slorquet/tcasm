@@ -1,14 +1,24 @@
 BIN=tcasm
-OBJS=main.o parser.o directives.o section.o chunk.o
-OBJS+=arm.o
+SRCS=main.c parser.c directives.c section.c chunk.c
+SRCS+=arm.c
+
+OBJS=$(SRCS:.c=.o)
 
 CC = gcc
 CFLAGS = -g
 
-$(BIN): $(OBJS)
+.default: $(BIN)
+
+$(BIN): Make.dep $(OBJS)
 	$(CC) -static $(OBJS) -o $@
+
+Make.dep: $(SRCS)
+	$(CC) -MM $(SRCS) > $@
 
 clean:
 	rm -f $(BIN)
 	rm -f $(OBJS)
+	rm -f Make.dep
+
+-include Make.dep
 
