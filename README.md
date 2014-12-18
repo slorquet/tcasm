@@ -33,8 +33,8 @@ So here are the rules:
 
     generic directives are parsed by common code:
     [todo] .global .extern
-    [todo] .end
     [todo] .float .single .double
+    [done] .end
     [done] .align .balign .p2align <value>[,<fill>]
     [done] .section <unquoted_name> .text .data .bss .rodata
     [done] .ascii .asciz .string <quoted string>
@@ -54,6 +54,17 @@ current limitations that will be upgraded in the future
     no file  inclusion
     no macros
     only one line/continuation comment char
+
+ARM
+===
+
+parsed addressing modes
+
+rN,pc,sp,lr
+#val
+[reg]
+[reg, #val]
+{reg, ...}
 
 -- slorquet
 

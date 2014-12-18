@@ -433,6 +433,13 @@ int directive(struct asm_state_s *state, char *dir, char *params)
     {
       ret = parse_space_align(state, params, infos.align_p2?MODE_P2ALIGN:MODE_BALIGN);
     }
+  else if (!strcmp(dir, ".end") )
+    {
+      /* Discard anything after this line. */
+      fseek(state->input, 0, SEEK_END); /* next read will EOF */
+      /* Do you have a simpler way to do that?? :D */
+      ret = ASM_OK;
+    }
   else
     {
     ret = ASM_UNHANDLED; /* try platform specific directives */
