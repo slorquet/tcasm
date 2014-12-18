@@ -176,11 +176,16 @@ char * arm_parse_operand(struct asm_state_s *state, char *buf, struct arm_operan
         }
       printf("arg: %s\n",arg);
     }
-  else if(*arg=='[')
+  else if(*arg=='[' || *arg=='{')
     {
-      /*[ra,rb], [ra,#imm]*/
+      char sep = *arg;
+
+      /*compute closing char */
+      sep = (*arg=='[')?']':'}';
+
+      /*[ra,rb], [ra,#imm], {ra,...}*/
       arg++; /* skip initial bracket */
-      while(*buf && !(*buf==']')) buf++;
+      while(*buf && !(*buf==sep)) buf++;
       if(*buf)
         {
           *buf = 0;

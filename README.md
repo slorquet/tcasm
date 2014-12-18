@@ -60,11 +60,11 @@ ARM
 
 parsed addressing modes
 
-rN,pc,sp,lr
-#val
-[reg]
-[reg, #val]
-{reg, ...}
+    rN,pc,sp,lr
+    #val
+    [reg]
+    [reg, #val]
+    {reg, ...}
 
 -- slorquet
 
