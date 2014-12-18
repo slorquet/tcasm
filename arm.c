@@ -144,6 +144,7 @@ int arm_getinfos(struct asm_backend_infos_s *infos)
   return ASM_OK;
 }
 
+/* https://sourceware.org/binutils/docs/as/ARM-Directives.html */
 int arm_directive(const struct asm_backend_s *backend, struct asm_state_s *state, char *dir)
 {
   int ret = ASM_UNHANDLED;
@@ -152,6 +153,21 @@ int arm_directive(const struct asm_backend_s *backend, struct asm_state_s *state
     {
       ret = ASM_OK;
     }
+  else if(!strcmp(dir, ".arm"))
+    {
+      ret = ASM_OK;
+    }
+  else if(!strcmp(dir, ".code")) /*[16|32]*/
+    {
+      ret = ASM_OK;
+    }
+  /*
+   * .even -> .align 2 
+   * .pool/.ltorg : http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0041c/Chedgddh.html
+   * .syntax unified|divided : https://sourceware.org/binutils/docs/as/ARM_002dInstruction_002dSet.html#ARM_002dInstruction_002dSet
+   * .req .unreq -> special treatment, label is not a label but a reg name ! may have to remove the last label 
+   */ 
+ 
   return ret;
 }
 
