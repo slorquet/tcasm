@@ -10,6 +10,7 @@ mov sp, lr
 add pc, #10
 
 ldr r0, [r1, #0]
+ldr r2, [r1, #0x24]
 
 ldr r2, [r1, r0]
 

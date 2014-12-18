@@ -176,6 +176,7 @@ int arm_directive(const struct asm_backend_s *backend, struct asm_state_s *state
 char * arm_parse_operand(struct asm_state_s *state, char *buf, struct arm_operand_s *op)
 {
   char *arg;
+  long val;
 
   /* eat separators */
   while(*buf && (*buf==' ' || *buf=='\t' || *buf==',')) buf++;
@@ -190,12 +191,83 @@ char * arm_parse_operand(struct asm_state_s *state, char *buf, struct arm_operan
           *buf = 0;
           buf++;
         }
-      printf("arg: %s\n",arg);
+      if (*arg=='r')
+        {
+          val = strtol(arg+1, NULL, 10);
+          if (val<0 || val>15)
+            {
+              goto linvalidreg;
+            }
+lvalidreg:
+          op->type = ARM_REG;
+          op->reg = val;
+          /* check special regs */
+          if(val<8)
+            {
+              op->type |= ARM_REG8;
+            }
+          else if(val==13)
+            {
+              op->type |= ARM_SP;
+            }
+          else if(val==15)
+            {
+              op->type |= ARM_PC;
+            }
+          printf("register %d, flags %04X\n", op->reg, op->type);
+        }
+      else if (*arg == '#') /*TODO unified syntax does not require litterals to start with a # */
+        {
+          uint32_t val;
+          char *rest;
+          /* litteral */
+          arg++;
+          val = strtol(arg, &rest, 0);
+          /*check that no strange characters appear after the litteral*/
+          if (*rest)
+            {
+              emit_message(state, ASM_ERROR, "Syntax error in litteral near '%s'",arg);
+              return NULL;
+            }
+          printf("litteral %s->%u\n",arg,val);
+          op->value = val;
+          /* set types according to value range */
+        }
+      else if (arg[2])
+        {
+          /*after Rn and litterals, only allowed values are pc,sp, or lr*/
+linvalidreg:
+          emit_message(state, ASM_ERROR, "Invalid register %s", arg);
+          return NULL;
+        }
+      else if (arg[0]=='s' && arg[1]=='p')
+        {
+          val = 13; /* sp = r13 */
+          goto lvalidreg;
+        }
+      else if (arg[0]=='l' && arg[1]=='r')
+        {
+          val = 14; /* lr = r14 */
+          goto lvalidreg;
+        }
+      else if (arg[0]=='p' && arg[1]=='c')
+        {
+          val = 15; /* pc = r15 */
+          goto lvalidreg;
+        }
+      else
+        {
+          /* catch-all for undefined cases */
+          emit_message(state, ASM_ERROR, "Syntax error for operand '%s'", arg);
+          return NULL;
+        }
+
     }
   else if(*arg=='[' || *arg=='{')
     {
       char sep = *arg;
-
+      struct arm_operand_s tmp;
+      int count;
       /*compute closing char */
       sep = (*arg=='[')?']':'}';
 
@@ -208,6 +280,18 @@ char * arm_parse_operand(struct asm_state_s *state, char *buf, struct arm_operan
           buf++;
         }
       printf("arg: %s\n",arg);
+
+      /* recursively parse the contents of the arg
+       * we count the args and only expect 2.
+       * Also the first one has to be a reg. */
+      count = 0;
+      while (*arg)
+        {
+          arg = arm_parse_operand(state, arg, &tmp);
+          if(!arg) return arg;
+          count++;
+        }
+      printf("composite done\n");
     }
   else
     {
