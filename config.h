@@ -47,5 +47,10 @@
 #define CONFIG_ASM_INC_COUNT 4
 #endif
 
+/* Maximum length of include paths. Sanity check only */
+#ifndef CONFIG_ASM_INC_MAXLEN
+#define CONFIG_ASM_INC_MAXLEN 80
+#endif
+
 #endif /* __CONFIG__H__ */
 

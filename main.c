@@ -154,17 +154,21 @@ int main(int argc, char **argv)
       else if (option == 'I')
         {
           int i;
+          /* first, check that option length is reasonable */
+          if (strlen(optarg) > CONFIG_ASM_INC_MAXLEN)
+            {
+              fprintf(stderr, "Include path too long\n");
+              continue;
+            }
           for (i = 0; i < CONFIG_ASM_INC_COUNT; i++)
             {
               if (state.includes[i]==NULL)
                 {
                   state.includes[i] = optarg;
-                  printf("include path: %s\n", optarg);
                   break;
                 }
               else if(!strcmp(state.includes[i], optarg))
                 {
-                  printf("duplicate path: %s\n", optarg);
                   break;
                 }
 

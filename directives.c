@@ -1,6 +1,7 @@
 #include "config.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -100,11 +101,46 @@ static int parse_space(struct asm_state_s *state, const char *params)
 }
 
 /*****************************************************************************/
+/* search a file name in all path entries */
+
+static char* find_alloc_incpath(struct asm_state_s *state, char *filename)
+{
+  char *dest;
+  int i;
+  int fnlen = strlen(filename);
+  int inclen;
+  FILE *f;
+  for (i = 0; i < CONFIG_ASM_INC_COUNT; i++)
+    {
+      if (!state->includes[i]) break;
+      inclen = strlen(state->includes[i]);
+      dest   = malloc(inclen + 1 + fnlen + 1);
+      if (!dest)
+        {
+          emit_message(state, ASM_ERROR, "Cannot evaluate include path, malloc() failed");
+          return NULL;
+        }
+      strcpy(dest, state->includes[i]);
+      strcat(dest, "/");
+      strcat(dest, filename);
+      f = fopen(dest, "rb");
+      if (f)
+        {
+        fclose(f);
+        return dest;
+        }
+      free(dest);
+    }
+  return NULL;
+}
+
+/*****************************************************************************/
 /* .incbin "file" */
 
 static int parse_incbin(struct asm_state_s *state, char *params)
 {
   char *base = params;
+  char *path;
   FILE *f;
   uint8_t buf[8];
 
@@ -126,24 +162,40 @@ static int parse_incbin(struct asm_state_s *state, char *params)
   while (*params && *params!='"') params++;
   *params=0;
 
-#if 1 | DEBUG & DEBUG_DIR
+#if DEBUG & DEBUG_DIR
   printf("in section [%s] incbin file '%s'\n",state->current_section->name, base);
 #endif
 
-  f = fopen(base, "rb");
+  /* resolve includes */
+
+  path = find_alloc_incpath(state, base);
+  if(!path)
+    {
+      return emit_message(state, ASM_ERROR, "File '%s' not found in include path", base);
+    }
+
+  f = fopen(path, "rb");
   if (!f)
     {
+      free(path);
       return emit_message(state, ASM_ERROR, "Unable to open '%s'",base);
     }
 
   while (!feof(f))
     {
       int ret = fread(buf,1,8,f);
-      if (ret>0) printf("got %d bytes\n",ret); else break;
+      if (ret<=0)
+        {
+          break;
+        }
+#if DEBUG & DEBUG_DIR
+      else printf("got %d bytes\n",ret);
+#endif
       chunk_append(state, &state->current_section->data, buf, ret);
     }
 
   fclose(f);
+  free(path);
 
   return ASM_OK;
 }
