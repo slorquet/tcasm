@@ -53,9 +53,12 @@ void usage(void)
 {
   printf("Mini assembler\n"
          "tcasm [options] infile [infile...]\n"
+         "  -I <path> Add dir to include path\n"
          "  -o <outfile> (default: <infile>.s, or a.out if multiple infiles)\n"
-         "  -l list targets and exit\n"
-         "  -t <target> select target\n"
+#if ASM_BACKEND_COUNT > 1
+          "  -b <target> select backend\n"
+#endif
+         "  -v version info\n"
         );
 }
 
@@ -126,11 +129,21 @@ int main(int argc, char **argv)
 
   /* Update the assembler state using options */
 
-  while ((option = getopt(argc, argv, "vho:")) != -1)
+#if ASM_BACKEND_COUNT > 1
+#define ASM_OPTIONS "bhI:o:v"
+#else
+#define ASM_OPTIONS "hI:o:v"
+#endif
+  while ((option = getopt(argc, argv, ASM_OPTIONS)) != -1)
     {
       if (option == 'o')
         {
           state.outputname = strdup(optarg);
+        }
+      else if (option == 'I')
+        {
+          printf("include path: %s\n", optarg);
+          return 0;
         }
       else if (option == 'h')
         {

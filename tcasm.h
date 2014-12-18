@@ -85,6 +85,7 @@ struct asm_state_s
   char *outputname; /* output file name */
 
   /* input status */
+  char *includes[CONFIG_ASM_INC_COUNT]; /* pointers to include dir arguments */
   char *inputname; /* name of the current input file */
   FILE *input; /* currently managed input file */
   char inbuf[CONFIG_ASM_INBUF_SIZE]; /*buffer for reading input file */

@@ -42,5 +42,10 @@
 #define CONFIG_ASM_CHUNK 256
 #endif
 
+/* Maximum number of include path entries */
+#ifndef CONFIG_ASM_INC_COUNT
+#define CONFIG_ASM_INC_COUNT 4
+#endif
+
 #endif /* __CONFIG__H__ */
 
