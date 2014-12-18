@@ -97,7 +97,7 @@ static const char * msgtypes[] =
 int emit_message(struct asm_state_s *asmstate, int type, const char *msg, ...)
 {
   va_list ap;
-  if (type > (sizeof(msgtypes)/sizeof(msgtypes[0])))
+  if (type > ASM_ERROR)
     {
     type = 0;
     }

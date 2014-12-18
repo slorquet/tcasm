@@ -7,11 +7,13 @@
 /* forward declarations */
 int arm_getinfos(struct asm_backend_infos_s *infos);
 int arm_directive(const struct asm_backend_s *backend, struct asm_state_s *state, char *buf);
+int arm_instruction(const struct asm_backend_s *backend, struct asm_state_s *state, char *buf);
 
 const struct asm_backend_s arm_backend = 
 {
   arm_getinfos,
-  arm_directive
+  arm_directive,
+  arm_instruction
 };
 
 int arm_getinfos(struct asm_backend_infos_s *infos)
@@ -22,13 +24,20 @@ int arm_getinfos(struct asm_backend_infos_s *infos)
   return ASM_OK;
 }
 
-int arm_directive(const struct asm_backend_s *backend, struct asm_state_s *state, char *buf)
+int arm_directive(const struct asm_backend_s *backend, struct asm_state_s *state, char *dir)
 {
-  return ASM_OK;
+  int ret = ASM_UNHANDLED;
+  printf("arm directive: %s\n",dir);
+  if(!strcmp(dir, ".thumb"))
+    {
+      ret = ASM_OK;
+    }
+  return ret;
 }
 
 int arm_instruction(const struct asm_backend_s *backend, struct asm_state_s *state, char *buf)
 {
+  printf("arm instruction: %s\n",buf);
   return ASM_OK;
 }
 

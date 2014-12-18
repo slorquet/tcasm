@@ -23,8 +23,9 @@ static int parse_label(struct asm_state_s *state, char *label)
 
 static int parse_inst(struct asm_state_s *state, char *inst)
 {
-  printf("inst  [%s]\n", inst);
-  return ASM_OK;
+  /* pass directly to the backend */
+
+  return state->current_backend->instruction(state->current_backend, state, inst);
 }
 
 /*****************************************************************************/
@@ -44,7 +45,18 @@ static int parse_directive(struct asm_state_s *state, char *dir)
   printf("direc [%s]\n", dir);
   if(*params) printf("params [%s]\n", params);
 
-  return directive(state, dir, params);
+  ret = directive(state, dir, params);
+
+  if (ret == ASM_UNHANDLED)
+    {
+      ret = state->current_backend->directive(state->current_backend, state, dir);
+    }
+
+  if (ret == ASM_UNHANDLED)
+    {
+      ret = emit_message(state, ASM_WARN, "unknown directive '%s'", dir);
+    }
+  return ret;
 }
 
 /*****************************************************************************/

@@ -395,7 +395,7 @@ int directive(struct asm_state_s *state, char *dir, char *params)
     }
   else
     {
-    ret = emit_message(state, ASM_WARN, "unknown directive '%s'", dir);
+    ret = ASM_UNHANDLED; /* try platform specific directives */
     }
   return ret;
 }
