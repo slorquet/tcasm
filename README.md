@@ -29,12 +29,13 @@ So here are the rules:
     labels must not start with a number.
     (if the first word of a line does not ends with a colon, then it's a mnemonic.)
     multiple instructions per line are not supported
+    for ARM, .align 0 is not equivalent to 4-byte boundaries
 
     generic directives are parsed by common code:
     [todo] .global .extern
     [todo] .end
-    [todo] .align <power>[,<fill>] .balign <value>[,<fill>] .p2align <value>[,<fill>]
     [todo] .float .single .double
+    [done] .align .balign .p2align <value>[,<fill>]
     [done] .section <unquoted_name> .text .data .bss .rodata
     [done] .ascii .asciz .string <quoted string>
     [done] .db .byte 

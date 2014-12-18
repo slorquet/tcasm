@@ -10,6 +10,15 @@
 #define DEBUG 0
 #define DEBUG_DIR 2
 
+/* Execution modes for the fill/align command */
+
+enum
+{
+  MODE_FILL,
+  MODE_BALIGN,
+  MODE_P2ALIGN
+};
+
 /*****************************************************************************/
 /*.section sec .text .data .bss .rodata */
 
@@ -25,11 +34,12 @@ static int parse_section(struct asm_state_s *state, const char *secname)
 
 /*****************************************************************************/
 /* .ds / .space <size> [, <fillbyte>] */
+/* .align / .balign / .p2align <size> [, <fillbyte>] */
 
-static int parse_space(struct asm_state_s *state, const char *params)
+static int parse_space_align(struct asm_state_s *state, const char *params, int mode)
 {
   uint8_t buf[8];
-  uint32_t size,step;
+  uint32_t size,step,cur;
   char *rest;
   uint8_t fill = 0;
 
@@ -62,6 +72,12 @@ static int parse_space(struct asm_state_s *state, const char *params)
     }
 
   params = rest;
+
+  if (mode == MODE_P2ALIGN)
+    {
+      size = 1 << size;
+    }
+
 #if DEBUG & DEBUG_DIR
   printf("size: %d\n",size);
 #endif
@@ -85,6 +101,18 @@ static int parse_space(struct asm_state_s *state, const char *params)
 #if DEBUG & DEBUG_DIR
   printf("fill: %u\n",fill);
 #endif
+
+  if (mode != MODE_FILL)
+    {
+      /* compute the size to align */
+      cur = chunk_totalsize(state->current_section->data);
+      printf("current offset: %u\n",cur);
+
+      step = ((cur + size - 1) / size) * size;
+      printf("aligned offset: %u\n",step);
+
+      size = step - cur;
+    }
 
   /* do the fill */
 
@@ -383,7 +411,7 @@ int directive(struct asm_state_s *state, char *dir, char *params)
     }
   else if (!strcmp(dir, ".ds") || !strcmp(dir, ".space") )
     {
-      ret = parse_space(state, params);
+      ret = parse_space_align(state, params, MODE_FILL);
     }
   else if (!strcmp(dir, ".ascii") || !strcmp(dir, ".string") || !strcmp(dir, ".asciz") )
     {
@@ -392,6 +420,18 @@ int directive(struct asm_state_s *state, char *dir, char *params)
   else if (!strcmp(dir, ".incbin") )
     {
       ret = parse_incbin(state, params);
+    }
+  else if (!strcmp(dir, ".balign") )
+    {
+      ret = parse_space_align(state, params, MODE_BALIGN);
+    }
+  else if (!strcmp(dir, ".p2align") )
+    {
+      ret = parse_space_align(state, params, MODE_P2ALIGN);
+    }
+  else if (!strcmp(dir, ".align") )
+    {
+      ret = parse_space_align(state, params, infos.align_p2?MODE_P2ALIGN:MODE_BALIGN);
     }
   else
     {

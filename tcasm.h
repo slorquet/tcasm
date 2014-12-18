@@ -111,6 +111,7 @@ struct asm_backend_infos_s
   char *name;
   int endianess;
   int wordsize; /* word size in bytes, for .long, .int, .word */
+  int align_p2; /* TRUE if align aligns to a power of two */
 };
 
 struct asm_backend_s
