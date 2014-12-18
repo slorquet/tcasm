@@ -103,7 +103,7 @@ static int parse_space(struct asm_state_s *state, const char *params)
 /*****************************************************************************/
 /* search a file name in all path entries */
 
-static char* find_alloc_incpath(struct asm_state_s *state, char *filename)
+static FILE* fopen_incpath(struct asm_state_s *state, char *filename)
 {
   char *dest;
   int i;
@@ -124,12 +124,11 @@ static char* find_alloc_incpath(struct asm_state_s *state, char *filename)
       strcat(dest, "/");
       strcat(dest, filename);
       f = fopen(dest, "rb");
+      free(dest);
       if (f)
         {
-        fclose(f);
-        return dest;
+        return f;
         }
-      free(dest);
     }
   return NULL;
 }
@@ -140,7 +139,6 @@ static char* find_alloc_incpath(struct asm_state_s *state, char *filename)
 static int parse_incbin(struct asm_state_s *state, char *params)
 {
   char *base = params;
-  char *path;
   FILE *f;
   uint8_t buf[8];
 
@@ -168,17 +166,10 @@ static int parse_incbin(struct asm_state_s *state, char *params)
 
   /* resolve includes */
 
-  path = find_alloc_incpath(state, base);
-  if(!path)
+  f = fopen_incpath(state, base);
+  if(!f)
     {
       return emit_message(state, ASM_ERROR, "File '%s' not found in include path", base);
-    }
-
-  f = fopen(path, "rb");
-  if (!f)
-    {
-      free(path);
-      return emit_message(state, ASM_ERROR, "Unable to open '%s'",base);
     }
 
   while (!feof(f))
@@ -195,7 +186,6 @@ static int parse_incbin(struct asm_state_s *state, char *params)
     }
 
   fclose(f);
-  free(path);
 
   return ASM_OK;
 }
