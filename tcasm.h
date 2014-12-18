@@ -108,6 +108,7 @@ struct asm_backend_infos_s
 {
   char *name;
   int endianess;
+  int wordsize; /* word size in bytes, for .long, .int, .word */
 };
 
 struct asm_backend_s

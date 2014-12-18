@@ -10,6 +10,7 @@
 #define DEBUG_DIR 2
 
 /*****************************************************************************/
+/*.section sec .text .data .bss .rodata */
 
 static int parse_section(struct asm_state_s *state, const char *secname)
 {
@@ -22,8 +23,8 @@ static int parse_section(struct asm_state_s *state, const char *secname)
 }
 
 /*****************************************************************************/
-
 /* .ds / .space <size> [, <fillbyte>] */
+
 static int parse_space(struct asm_state_s *state, const char *params)
 {
   uint8_t buf[8];
@@ -34,6 +35,13 @@ static int parse_space(struct asm_state_s *state, const char *params)
 #if DEBUG & DEBUG_DIR
   printf("space ->%s\n", params);
 #endif
+
+  /* check we have a section */
+
+  if(!state->current_section)
+    {
+    return emit_message(state, ASM_ERROR, "No current section");
+    }
 
   /* eat spaces */
   while (*params && (*params==' ' || *params=='\t')) params++;
@@ -92,13 +100,70 @@ static int parse_space(struct asm_state_s *state, const char *params)
 }
 
 /*****************************************************************************/
+/* .incbin "file" */
 
+static int parse_incbin(struct asm_state_s *state, char *params)
+{
+  char *base = params;
+  FILE *f;
+  uint8_t buf[8];
+
+  /* check we have a section */
+
+  if(!state->current_section)
+    {
+    return emit_message(state, ASM_ERROR, "No current section");
+    }
+
+  /* skip to end of string */
+
+  if (*base!='\"')
+    {
+      return emit_message(state, ASM_ERROR, "Invalid string litteral, expected \"");
+    }
+  base++;
+  params++;
+  while (*params && *params!='"') params++;
+  *params=0;
+
+#if 1 | DEBUG & DEBUG_DIR
+  printf("in section [%s] incbin file '%s'\n",state->current_section->name, base);
+#endif
+
+  f = fopen(base, "rb");
+  if (!f)
+    {
+      return emit_message(state, ASM_ERROR, "Unable to open '%s'",base);
+    }
+
+  while (!feof(f))
+    {
+      int ret = fread(buf,1,8,f);
+      if (ret>0) printf("got %d bytes\n",ret); else break;
+      chunk_append(state, &state->current_section->data, buf, ret);
+    }
+
+  fclose(f);
+
+  return ASM_OK;
+}
+
+/*****************************************************************************/
 /* Append a string to the current section, possibly adding a final zero. */
 
 static int directive_cb_append_string(struct asm_state_s *state, char **str, int arg)
 {
   char *base = *str;
-  //skip to end of string
+
+  /* check we have a section */
+
+  if(!state->current_section)
+    {
+    return emit_message(state, ASM_ERROR, "No current section");
+    }
+
+  /* skip to end of string */
+
   if (*base!='\"')
     {
       return emit_message(state, ASM_ERROR, "Invalid string litteral, expected \"", *base);
@@ -176,7 +241,15 @@ static int directive_cb_append_number(struct asm_state_s *state, char **str, int
   long val;
   char *rest;
   uint8_t encoded[4];
-  struct asm_backend_infos_s info;
+  int end;
+
+  /* check we have a section */
+
+  if(!state->current_section)
+    {
+    return emit_message(state, ASM_ERROR, "No current section");
+    }
+
   val = strtol(*str, &rest, 0);
 
   /*printf("parsed val=%ld, after number : %s\n",val, rest);*/
@@ -192,9 +265,16 @@ static int directive_cb_append_number(struct asm_state_s *state, char **str, int
 
   *str = rest;
 
+  /* retrieve endianess */
+  end = ASM_ENDIAN_BIG;
+  if (arg<0)
+    {
+      arg = -arg;
+      end = ASM_ENDIAN_LITTLE;
+    }
+
   /* add to current section */
-  state->current_backend->getinfos(&info);
-  number_encode(encoded, val, arg, info.endianess);
+  number_encode(encoded, val, arg, end);
   chunk_append(state, &state->current_section->data, encoded, arg);
 
   return ASM_OK;
@@ -226,6 +306,10 @@ int directive_for_each_param(struct asm_state_s *state, char *params, int (*call
 int directive(struct asm_state_s *state, char *dir, char *params)
 {
   int ret;
+  struct asm_backend_infos_s infos;
+
+  state->current_backend->getinfos(&infos);
+
   if (!strcmp(dir, ".section"))
     {
       char *ptr = params;
@@ -240,11 +324,20 @@ int directive(struct asm_state_s *state, char *dir, char *params)
     }
   else if (!strcmp(dir, ".db") || !strcmp(dir, ".byte") )
     {
-      ret = directive_for_each_param(state, params, directive_cb_append_number, 1);
+      ret = directive_for_each_param(state, params, directive_cb_append_number, (infos.endianess == ASM_ENDIAN_BIG)?1:-1);
     }
   else if (!strcmp(dir, ".dh") || !strcmp(dir, ".hword") || !strcmp(dir, ".short")  )
     {
-      ret = directive_for_each_param(state, params, directive_cb_append_number, 2);
+      ret = directive_for_each_param(state, params, directive_cb_append_number, (infos.endianess == ASM_ENDIAN_BIG)?2:-2);
+    }
+  else if (!strcmp(dir, ".dw") || !strcmp(dir, ".word") || !strcmp(dir, ".int") || !strcmp(dir, ".long")  )
+    {
+      int ws = infos.wordsize;
+      if (infos.endianess == ASM_ENDIAN_LITTLE)
+        {
+          ws=-ws;
+        }
+      ret = directive_for_each_param(state, params, directive_cb_append_number, ws);
     }
   else if (!strcmp(dir, ".ds") || !strcmp(dir, ".space") )
     {
@@ -253,6 +346,10 @@ int directive(struct asm_state_s *state, char *dir, char *params)
   else if (!strcmp(dir, ".ascii") || !strcmp(dir, ".string") || !strcmp(dir, ".asciz") )
     {
       ret = directive_for_each_param(state, params, directive_cb_append_string, !strcmp(dir, ".asciz"));
+    }
+  else if (!strcmp(dir, ".incbin") )
+    {
+      ret = parse_incbin(state, params);
     }
   else
     {

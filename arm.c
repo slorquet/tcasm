@@ -18,6 +18,7 @@ int arm_getinfos(struct asm_backend_infos_s *infos)
 {
   infos->name = "arm";
   infos->endianess = ASM_ENDIAN_LITTLE;
+  infos->wordsize = 4; /* 32-bit int and longs */
   return ASM_OK;
 }
 
