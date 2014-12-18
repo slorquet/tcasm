@@ -30,6 +30,15 @@
 
 /* these definitions depend on the presence of backends */
 
+/* count backends using the compiler only, avoiding sizeof */
+enum asm_backend_counter_e
+{
+#ifdef CONFIG_ASM_TARGET_ARM
+  ASM_BACKEND_INDEX_ARM,
+#endif
+  ASM_BACKEND_COUNT
+};
+
 #ifdef CONFIG_ASM_TARGET_ARM
 extern struct asm_backend_s arm_backend;
 #endif
@@ -40,8 +49,6 @@ static struct asm_backend_s * backends[] =
   &arm_backend,
 #endif
 };
-
-#define ASM_BACKEND_COUNT (sizeof(backends) / sizeof(backends[0]))
 
 static struct asm_state_s state;
 
