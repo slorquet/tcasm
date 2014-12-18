@@ -62,7 +62,7 @@ parsed addressing modes
 
     rN,pc,sp,lr
     #val
-    [reg]
+    [reg, reg]
     [reg, #val]
     {reg, ...}
 
