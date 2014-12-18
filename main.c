@@ -120,6 +120,10 @@ void init(struct asm_state_s *asmstate)
     {
       asmstate->sections[i].id = SECTION_NONE;
     }
+  for (i = 0; i < CONFIG_ASM_INC_COUNT; i++)
+    {
+      asmstate->includes[i]=NULL;
+    }
 }
 
 /*****************************************************************************/
@@ -149,8 +153,26 @@ int main(int argc, char **argv)
         }
       else if (option == 'I')
         {
-          printf("include path: %s\n", optarg);
-          return 0;
+          int i;
+          for (i = 0; i < CONFIG_ASM_INC_COUNT; i++)
+            {
+              if (state.includes[i]==NULL)
+                {
+                  state.includes[i] = optarg;
+                  printf("include path: %s\n", optarg);
+                  break;
+                }
+              else if(!strcmp(state.includes[i], optarg))
+                {
+                  printf("duplicate path: %s\n", optarg);
+                  break;
+                }
+
+            }
+          if (i == CONFIG_ASM_INC_COUNT)
+            {
+              fprintf(stderr,"Error: too many includes, discarded '%s'\n",optarg);
+            }
         }
       else if (option == 'h')
         {

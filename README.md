@@ -33,16 +33,16 @@ multiple instructions per line are not supported
 
 generic directives are parsed by common code:
 [todo] .global .extern
-[todo] .incbin
 [todo] .end
 [todo] .align <power>[,<fill>] .balign <value>[,<fill>] .p2align <value>[,<fill>]
-[todo] .dw .word .int .long
 [todo] .float .single .double
-[done] .ds .space <size>[,<fill=0>]
 [done] .section <unquoted_name> .text .data .bss .rodata
 [done] .ascii .asciz .string <quoted string>
 [done] .db .byte 
 [done] .dh .hword .short
+[done] .dw .word .int .long (target dependent size)
+[done] .ds .space <size>[,<fill=0>]
+[done] .incbin
 
 other directives are parsed by the code generator
 mnemonics are handled by the code generator
