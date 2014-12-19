@@ -4,6 +4,19 @@
 
 #include "tcasm.h"
 
+/* arm arch and cpu                                   ISAs
+ * armv4t       ARM7TDMI, ARM9TDMI                    ARM, Thumb
+ * armv5        ARM7EJ, ARM9E, ARM10E, XScale         x
+ * armv6        ARM11                                 x
+ * armv6m       cm0, cm0+, cm1                        x
+ * armv7m       cm3                                   Thumb2
+ * armv7em      cm4, cm7                              Thumb2
+ * armv7r       cr4, cr5, cr7                         x
+ * armv7a       ca5, ca7, ca8, ca9, ca12, ca15, ca17  x
+ * armv8a       ca53, ca75                            x
+ */
+
+
 /* arm addressing modes, as available to instrctions */
 enum asm_arm_mode_e
 {
@@ -40,6 +53,7 @@ struct arm_inst
 struct arm_inst arm_thumb_instructions[] =
 {
   {"adc"  ,  2, ARM_REG8, ARM_REG8},
+
   {"add"  ,  3, ARM_REG8, ARM_REG8, ARM_REG8},
   {"add"  ,  3, ARM_REG8, ARM_REG8, ARM_LIT3},
   {"add"  ,  2, ARM_REG8, ARM_LIT8},
@@ -47,9 +61,12 @@ struct arm_inst arm_thumb_instructions[] =
   {"add"  ,  3, ARM_REG8 , ARM_PC  , ARM_LIT8 },
   {"add"  ,  3, ARM_REG8 , ARM_SP  , ARM_LIT8 },
   {"add"  ,  2, ARM_SP  , ARM_LIT8 }, /*signed value */
+
   {"and"  ,  2, ARM_REG8, ARM_REG8},
+
   {"asr"  ,  3, ARM_REG8, ARM_REG8, ARM_LIT5},
   {"asr"  ,  2, ARM_REG8, ARM_REG8},
+
   {"b"    ,  1, ARM_LABEL11},
   {"beq"  ,  1, ARM_LABEL8},
   {"bne"  ,  1, ARM_LABEL8},
@@ -69,27 +86,37 @@ struct arm_inst arm_thumb_instructions[] =
   {"bl"   ,  1, ARM_LABEL11},
   {"bx"   ,  2, ARM_REG , ARM_REG },
   {"cmn"  ,  2, ARM_REG8, ARM_REG8},
+
   {"cmp"  ,  2, ARM_REG8, ARM_LIT8},
   {"cmp"  ,  2, ARM_REG8, ARM_REG8},
   {"cmp"  ,  2, ARM_REG , ARM_REG },
+
   {"eor"  ,  2, ARM_REG8, ARM_REG8},
   {"ldmia",  2, ARM_REG8, ARM_RLIST7},
+
   {"ldr"  ,  2, ARM_REG8, ARM_PCR8},
   {"ldr"  ,  2, ARM_REG8, ARM_RRD },
   {"ldr"  ,  2, ARM_REG8, ARM_RDS5},
   {"ldr"  ,  2, ARM_REG8, ARM_SPR8},
+
   {"ldrb" ,  2, ARM_REG8, ARM_RRD },
   {"ldrb" ,  2, ARM_REG8, ARM_RDS5},
+
   {"ldrh" ,  2, ARM_REG8, ARM_RRD },
   {"ldrh" ,  2, ARM_REG8, ARM_RDS5},
+
   {"ldsb" ,  2, ARM_REG8, ARM_RRD },
   {"ldsh" ,  2, ARM_REG8, ARM_RRD },
+
   {"lsl"  ,  3, ARM_REG8, ARM_REG8, ARM_LIT5},
   {"lsl"  ,  2, ARM_REG8, ARM_REG8},
+
   {"lsr"  ,  3, ARM_REG8, ARM_REG8, ARM_LIT5},
   {"lsr"  ,  2, ARM_REG8, ARM_REG8},
+
   {"mov"  ,  2, ARM_REG8, ARM_LIT8},
   {"mov"  ,  2, ARM_REG , ARM_REG },
+
   {"mul"  ,  2, ARM_REG8, ARM_REG8},
   {"mvn"  ,  2, ARM_REG8, ARM_REG8},
   {"neg"  ,  2, ARM_REG8, ARM_REG8},
@@ -99,18 +126,24 @@ struct arm_inst arm_thumb_instructions[] =
   {"ror"  ,  2, ARM_REG8, ARM_REG8},
   {"sbc"  ,  2, ARM_REG8, ARM_REG8},
   {"stmia",  2, ARM_REG8, ARM_RLIST7},
+
   {"str"  ,  2, ARM_REG8, ARM_PCR8},
   {"str"  ,  2, ARM_REG8, ARM_RRD },
   {"str"  ,  2, ARM_REG8, ARM_RDS5},
   {"str"  ,  2, ARM_REG8, ARM_SPR8},
+
   {"strb" ,  2, ARM_REG8, ARM_RRD },
   {"strb" ,  2, ARM_REG8, ARM_RDS5},
+
   {"strh" ,  2, ARM_REG8, ARM_RRD },
   {"strh" ,  2, ARM_REG8, ARM_RDS5},
+
   {"stsb" ,  2, ARM_REG8, ARM_RRD },
+
   {"sub"  ,  2, ARM_REG8, ARM_REG8},
   {"sub"  ,  2, ARM_REG8, ARM_LIT3},
   {"sub"  ,  2, ARM_REG8, ARM_LIT8},
+
   {"swi"  ,  1, ARM_LIT8},
   {"tst"  ,  2, ARM_REG8, ARM_REG8},
 };
