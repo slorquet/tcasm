@@ -116,9 +116,10 @@ struct asm_backend_infos_s
 
 struct asm_backend_s
 {
-  int (*getinfos)(struct asm_backend_infos_s *infos);
-  int (*directive)(const struct asm_backend_s *backend, struct asm_state_s *state, char *buf);
+  int (*getinfos)   (struct asm_backend_infos_s *infos);
+  int (*directive)  (const struct asm_backend_s *backend, struct asm_state_s *state, char *buf);
   int (*instruction)(const struct asm_backend_s *backend, struct asm_state_s *state, char *buf);
+  int (*option)     (const struct asm_backend_s *backend, struct asm_state_s *state, char *buf);
 };
 
 /*****************************************************************************/

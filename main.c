@@ -30,18 +30,19 @@
 
 /* these definitions depend on the presence of backends */
 
-/* count backends using the compiler only, avoiding sizeof */
-enum asm_backend_counter_e
-{
-#ifdef CONFIG_ASM_TARGET_ARM
-  ASM_BACKEND_INDEX_ARM,
-#endif
-  ASM_BACKEND_COUNT
-};
 
 #ifdef CONFIG_ASM_TARGET_ARM
 extern struct asm_backend_s arm_backend;
 #endif
+
+/* preprocessor cannot use sizeof. so use an enum instead */
+enum asm_backend_counter_e
+{
+#ifdef CONFIG_ASM_TARGET_ARM
+  arm_backend_index,
+#endif
+  ASM_BACKEND_COUNT
+};
 
 static struct asm_backend_s * backends[] = 
 {
@@ -58,15 +59,18 @@ static struct asm_state_s state;
 
 void usage(void)
 {
-  printf("Mini assembler\n"
+  printf("Tiny Compact Assembler\n"
          "tcasm [options] infile [infile...]\n"
          "  -I <path> Add dir to include path\n"
          "  -o <outfile> (default: <infile>.s, or a.out if multiple infiles)\n"
-#if ASM_BACKEND_COUNT > 1
-          "  -b <target> select backend\n"
-#endif
-         "  -v version info\n"
-        );
+         "  -v version info\n");
+  if(ASM_BACKEND_COUNT > 1)
+    printf(
+         "  -b <target> select backend\n"
+         "  -m backend options (must appear after -b)\n");
+  else
+    printf(
+         "  -m backend options\n");
 }
 
 /*****************************************************************************/
@@ -116,6 +120,7 @@ void init(struct asm_state_s *asmstate)
   int i;
   asmstate->outputname = NULL;
   asmstate->current_section = NULL;
+  asmstate->current_backend = NULL;
   for (i = 0; i<CONFIG_ASM_SEC_MAX; i++)
     {
       asmstate->sections[i].id = SECTION_NONE;
@@ -132,20 +137,34 @@ int main(int argc, char **argv)
 {
   int option;
   int index;
+  char *asm_options;
   int ret = 0;
+
+  struct asm_backend_infos_s infos;
 
   /* Initialize the assembler state */
 
   init(&state);
 
-  /* Update the assembler state using options */
+  /* Determine the correct backend */
 
-#if ASM_BACKEND_COUNT > 1
-#define ASM_OPTIONS "bhI:o:v"
-#else
-#define ASM_OPTIONS "hI:o:v"
-#endif
-  while ((option = getopt(argc, argv, ASM_OPTIONS)) != -1)
+  if (ASM_BACKEND_COUNT == 1)
+    {
+      state.current_backend = backends[0];
+    }
+
+  if (ASM_BACKEND_COUNT > 1)
+    {
+      asm_options = "bm:hI:o:v";
+    }
+  else
+    {
+      asm_options = "m:hI:o:v";
+    }
+
+  /* parse options */
+
+  while ((option = getopt(argc, argv, asm_options)) != -1)
     {
       if (option == 'o')
         {
@@ -153,27 +172,26 @@ int main(int argc, char **argv)
         }
       else if (option == 'I')
         {
-          int i;
           /* first, check that option length is reasonable */
           if (strlen(optarg) > CONFIG_ASM_INC_MAXLEN)
             {
               fprintf(stderr, "Include path too long\n");
               continue;
             }
-          for (i = 0; i < CONFIG_ASM_INC_COUNT; i++)
+          for (index = 0; index < CONFIG_ASM_INC_COUNT; index++)
             {
-              if (state.includes[i]==NULL)
+              if (state.includes[index]==NULL)
                 {
-                  state.includes[i] = optarg;
+                  state.includes[index] = optarg;
                   break;
                 }
-              else if(!strcmp(state.includes[i], optarg))
+              else if(!strcmp(state.includes[index], optarg))
                 {
                   break;
                 }
 
             }
-          if (i == CONFIG_ASM_INC_COUNT)
+          if (index == CONFIG_ASM_INC_COUNT)
             {
               fprintf(stderr,"Error: too many includes, discarded '%s'\n",optarg);
             }
@@ -187,6 +205,39 @@ int main(int argc, char **argv)
         {
           version();
           return 0;
+        }
+      else if (option == 'b')
+        {
+          int found = 0;
+          /* list all backends, then select */
+          for (index = 0; index < ASM_BACKEND_COUNT; index++)
+            {
+              backends[index]->getinfos(&infos);
+              if (!strcmp(infos.name, optarg))
+                {
+                  state.current_backend = backends[index];
+                  found = 1;
+                  break;
+                }
+            }
+          if (!found)
+            {
+              fprintf(stderr, "Unknown backend %s\n", optarg);
+              return 1;
+            }
+        }
+      else if (option == 'm')
+        {
+          if (!state.current_backend)
+            {
+              fprintf(stderr, "No backend selected\n");
+              return 1;
+            }
+          ret = state.current_backend->option(state.current_backend, &state, optarg);
+          if (ret != 0)
+            {
+              return ret;
+            }
         }
       else
         {
@@ -203,16 +254,13 @@ int main(int argc, char **argv)
       goto donefree;
     }
 
-  /* Determine the correct backend */
-  if (ASM_BACKEND_COUNT==1)
+  /* stop if multiple backends are available and non was chosen */
+  if (!state.current_backend)
     {
-      state.current_backend = backends[0];
-    }
-  else
-    {
-      printf("More than one backend available, choose with -b (TODO)\n");
+      printf("More than one backend available, choose with -b\n");
       return 1;
     }
+
 
   /* Parse each input file */
 

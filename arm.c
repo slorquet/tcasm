@@ -4,16 +4,19 @@
 
 #include "tcasm.h"
 
-/* arm arch and cpu                                   ISAs
- * armv4t       ARM7TDMI, ARM9TDMI                    ARM, Thumb
- * armv5        ARM7EJ, ARM9E, ARM10E, XScale         x
- * armv6        ARM11                                 x
- * armv6m       cm0, cm0+, cm1                        x
- * armv7m       cm3                                   Thumb2
- * armv7em      cm4, cm7                              Thumb2
- * armv7r       cr4, cr5, cr7                         x
- * armv7a       ca5, ca7, ca8, ca9, ca12, ca15, ca17  x
- * armv8a       ca53, ca75                            x
+/* arm arch and cpu                                      ISAs
+ * http://www.heyrick.co.uk/armwiki/The_ARM_family
+ * armv4        StrongARM, ARM8                          ARM
+ * armv4t       ARM7TDMI, ARM9TDMI                       ARM  Thumb
+ * armv5        ARM7EJ, ARM9E, ARM10E,                   ARM
+ * armv5t       Xscale                                   ARM  Thumb
+ * armv6        ARM11                                    ARM  Thumb
+ * armv6m       cm0, cm0+, cm1                                Thumb2    DDI0419C A.4.1 page 66
+ * armv7m       cm3                                           Thumb2
+ * armv7em      cm4, cm7                                      Thumb2
+ * armv7r       cr4, cr5, cr7                            ARM
+ * armv7a       ca5, ca7, ca8, ca9, ca12, ca15, ca17     ARM
+ * armv8a       ca53, ca75                               ARM
  */
 
 
@@ -160,12 +163,14 @@ struct arm_operand_s
 int arm_getinfos(struct asm_backend_infos_s *infos);
 int arm_directive(const struct asm_backend_s *backend, struct asm_state_s *state, char *buf);
 int arm_instruction(const struct asm_backend_s *backend, struct asm_state_s *state, char *buf);
+int arm_option(const struct asm_backend_s *backend, struct asm_state_s *state, char *buf);
 
 const struct asm_backend_s arm_backend = 
 {
   arm_getinfos,
   arm_directive,
-  arm_instruction
+  arm_instruction,
+  arm_option,
 };
 
 int arm_getinfos(struct asm_backend_infos_s *infos)
@@ -174,6 +179,12 @@ int arm_getinfos(struct asm_backend_infos_s *infos)
   infos->endianess = ASM_ENDIAN_LITTLE;
   infos->wordsize = 4; /* 32-bit int and longs */
   infos->align_p2 = 1; /* align boundaries to power of twos */
+  return ASM_OK;
+}
+
+int arm_option(const struct asm_backend_s *backend, struct asm_state_s *state, char *buf)
+{
+  printf("arm option: %s\n",buf);
   return ASM_OK;
 }
 
@@ -363,6 +374,7 @@ int arm_instruction(const struct asm_backend_s *backend, struct asm_state_s *sta
 
   for (i=0; i<COUNT(arm_thumb_instructions); i++)
     {
+      printf("-> %s\n",arm_thumb_instructions[i].name);
     }
 
   return ASM_OK;
